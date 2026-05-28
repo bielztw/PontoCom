@@ -1,0 +1,1191 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MercadoFácil — Marketplace para Microempreendedores</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- TOPBAR -->
+    <div class="topbar"></div>
+
+    <!-- HEADER -->
+    <header>
+      <div class="header-inner">
+        <div class="logo" onclick="scrollToTop()">MercadoFácil</div>
+        <div class="search-bar">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Buscar lojas, produtos, categorias..."
+            oninput="handleSearch(this.value)"
+          />
+          <button onclick="doSearch()"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline" onclick="openModal('modal-login')">
+            <i class="fas fa-user"></i> Entrar
+          </button>
+          <button class="btn btn-primary" onclick="openModal('modal-register')">
+            <i class="fas fa-store"></i> Cadastrar
+          </button>
+          <button class="cart-btn pulse" onclick="toggleCart()">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-badge" id="cartCount">0</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- NAV CATEGORIES -->
+    <nav class="nav-cats">
+      <div class="nav-cats-inner">
+        <button class="nav-cat active" onclick="filterCat('todos', this)">
+          <i class="fas fa-th-large"></i> Todos
+        </button>
+        <button class="nav-cat" onclick="filterCat('tecnologia', this)">
+          <i class="fas fa-laptop"></i> Tecnologia
+        </button>
+        <button class="nav-cat" onclick="filterCat('farmacia', this)">
+          <i class="fas fa-prescription-bottle-alt"></i> Farmácia
+        </button>
+        <button class="nav-cat" onclick="filterCat('alimentacao', this)">
+          <i class="fas fa-utensils"></i> Alimentação
+        </button>
+        <button class="nav-cat" onclick="filterCat('moda', this)">
+          <i class="fas fa-tshirt"></i> Moda & Estilo
+        </button>
+        <button class="nav-cat" onclick="filterCat('beleza', this)">
+          <i class="fas fa-spa"></i> Beleza
+        </button>
+        <button class="nav-cat" onclick="filterCat('pets', this)">
+          <i class="fas fa-paw"></i> Pet Shop
+        </button>
+        <button class="nav-cat" onclick="filterCat('livros', this)">
+          <i class="fas fa-book"></i> Livros & Arte
+        </button>
+        <button class="nav-cat" onclick="filterCat('esportes', this)">
+          <i class="fas fa-running"></i> Esportes
+        </button>
+        <button class="nav-cat" onclick="filterCat('casa', this)">
+          <i class="fas fa-home"></i> Casa & Jardim
+        </button>
+        <button class="nav-cat" onclick="filterCat('servicos', this)">
+          <i class="fas fa-concierge-bell"></i> Serviços
+        </button>
+        <button class="nav-cat" onclick="showTab('logistica')">
+          <i class="fas fa-chart-line" style="color: var(--rosa)"></i> Painel
+          Logístico
+        </button>
+      </div>
+    </nav>
+
+    <!-- FLOATING MENU -->
+    <div class="floating-menu">
+      <button
+        class="float-item"
+        onclick="toggleMenu()"
+        style="background: var(--grad1); color: white"
+        title="Menu"
+      >
+        <i class="fas fa-bars"></i>
+        <span class="tooltip">Menu</span>
+      </button>
+      <button class="float-item" onclick="showTab('lojas')">
+        <i class="fas fa-store"></i>
+        <span class="tooltip">Lojas</span>
+      </button>
+      <button class="float-item" onclick="showTab('produtos')">
+        <i class="fas fa-box"></i>
+        <span class="tooltip">Produtos</span>
+      </button>
+      <button class="float-item" onclick="showTab('mapa')">
+        <i class="fas fa-map-marker-alt"></i>
+        <span class="tooltip">Mapa</span>
+      </button>
+      <button class="float-item" onclick="showTab('logistica')">
+        <i class="fas fa-chart-bar"></i>
+        <span class="tooltip">Logística</span>
+      </button>
+      <button class="float-item" onclick="showTab('suporte')">
+        <i class="fas fa-headset"></i>
+        <span class="tooltip">Suporte</span>
+      </button>
+      <button class="float-item" onclick="openModal('modal-coupon')">
+        <i class="fas fa-tag"></i>
+        <span class="tooltip">Cupons</span>
+      </button>
+    </div>
+
+    <!-- MENU PANEL -->
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+    <div class="menu-panel" id="menuPanel">
+      <div class="menu-header">
+        <h2>🛍️ Menu</h2>
+        <p>Explore tudo no MercadoFácil</p>
+        <button class="menu-close" onclick="toggleMenu()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="menu-section">
+        <h3>Principal</h3>
+        <div
+          class="menu-item"
+          onclick="
+            showTab('lojas');
+            toggleMenu();
+          "
+        >
+          <i class="mi-rosa fas fa-store"></i> Lojas em Destaque
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            showTab('produtos');
+            toggleMenu();
+          "
+        >
+          <i class="mi-laranja fas fa-box-open"></i> Todos os Produtos
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            showTab('mapa');
+            toggleMenu();
+          "
+        >
+          <i class="mi-amarelo fas fa-map"></i> Mapa de Lojas
+        </div>
+      </div>
+      <div class="menu-section">
+        <h3>Ferramentas</h3>
+        <div
+          class="menu-item"
+          onclick="
+            showTab('logistica');
+            toggleMenu();
+          "
+        >
+          <i class="mi-rosa fas fa-chart-line"></i> Painel Logístico
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            openModal('modal-coupon');
+            toggleMenu();
+          "
+        >
+          <i class="mi-laranja fas fa-ticket-alt"></i> Meus Cupons
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            showTab('pedidos');
+            toggleMenu();
+          "
+        >
+          <i class="mi-amarelo fas fa-list-alt"></i> Meus Pedidos
+        </div>
+      </div>
+      <div class="menu-section">
+        <h3>Categorias</h3>
+        <div
+          class="menu-item"
+          onclick="
+            filterCat('tecnologia');
+            toggleMenu();
+          "
+        >
+          <i class="mi-rosa fas fa-laptop"></i> Tecnologia
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            filterCat('farmacia');
+            toggleMenu();
+          "
+        >
+          <i class="mi-laranja fas fa-pills"></i> Farmácia
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            filterCat('alimentacao');
+            toggleMenu();
+          "
+        >
+          <i class="mi-amarelo fas fa-hamburger"></i> Alimentação
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            filterCat('moda');
+            toggleMenu();
+          "
+        >
+          <i class="mi-rosa fas fa-tshirt"></i> Moda & Estilo
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            filterCat('beleza');
+            toggleMenu();
+          "
+        >
+          <i class="mi-laranja fas fa-spa"></i> Beleza
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            filterCat('pets');
+            toggleMenu();
+          "
+        >
+          <i class="mi-amarelo fas fa-paw"></i> Pet Shop
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            filterCat('esportes');
+            toggleMenu();
+          "
+        >
+          <i class="mi-rosa fas fa-running"></i> Esportes
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            filterCat('casa');
+            toggleMenu();
+          "
+        >
+          <i class="mi-laranja fas fa-home"></i> Casa & Jardim
+        </div>
+      </div>
+      <div class="menu-section">
+        <h3>Conta</h3>
+        <div
+          class="menu-item"
+          onclick="
+            openModal('modal-login');
+            toggleMenu();
+          "
+        >
+          <i class="mi-rosa fas fa-sign-in-alt"></i> Entrar
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            openModal('modal-register');
+            toggleMenu();
+          "
+        >
+          <i class="mi-laranja fas fa-user-plus"></i> Criar Conta
+        </div>
+        <div
+          class="menu-item"
+          onclick="
+            showTab('suporte');
+            toggleMenu();
+          "
+        >
+          <i class="mi-amarelo fas fa-headset"></i> Suporte
+        </div>
+      </div>
+    </div>
+
+    <!-- CART PANEL -->
+    <div class="cart-panel" id="cartPanel">
+      <div class="cart-header">
+        <h2><i class="fas fa-shopping-cart"></i> Meu Carrinho</h2>
+        <button
+          onclick="toggleCart()"
+          style="
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+          "
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="cart-items" id="cartItems">
+        <div style="text-align: center; padding: 60px 20px; color: var(--gray)">
+          <i
+            class="fas fa-shopping-bag"
+            style="
+              font-size: 48px;
+              margin-bottom: 12px;
+              opacity: 0.3;
+              display: block;
+            "
+          ></i>
+          <p style="font-weight: 700">Seu carrinho está vazio</p>
+          <p style="font-size: 12px">Adicione produtos incríveis!</p>
+        </div>
+      </div>
+      <div class="cart-footer">
+        <div class="coupon-section">
+          <label
+            style="
+              font-size: 12px;
+              font-weight: 700;
+              display: block;
+              margin-bottom: 6px;
+            "
+            ><i class="fas fa-tag" style="color: var(--rosa)"></i> Cupom de
+            desconto</label
+          >
+          <div class="coupon-input">
+            <input
+              type="text"
+              id="couponField"
+              placeholder="Digite o cupom..."
+            />
+            <button class="coupon-apply" onclick="applyCoupon()">
+              Aplicar
+            </button>
+          </div>
+        </div>
+        <div class="cart-total">
+          <span>Total:</span>
+          <span class="price" id="cartTotal">R$ 0,00</span>
+        </div>
+        <button
+          class="btn btn-primary"
+          style="width: 100%; justify-content: center; padding: 14px"
+          onclick="checkout()"
+        >
+          <i class="fas fa-lock"></i> Finalizar Compra
+        </button>
+      </div>
+    </div>
+    <div class="menu-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+
+    <!-- MAIN -->
+    <main>
+      <!-- MAIN TABS -->
+      <div class="main-tabs">
+        <button class="main-tab active" onclick="showTab('inicio')">
+          <i class="fas fa-home"></i> Início
+        </button>
+        <button class="main-tab" onclick="showTab('lojas')">
+          <i class="fas fa-store"></i> Lojas
+        </button>
+        <button class="main-tab" onclick="showTab('produtos')">
+          <i class="fas fa-box"></i> Produtos
+        </button>
+        <button class="main-tab" onclick="showTab('mapa')">
+          <i class="fas fa-map-marker-alt"></i> Mapa
+        </button>
+        <button class="main-tab" onclick="showTab('logistica')">
+          <i class="fas fa-chart-line"></i> Logística
+        </button>
+        <button class="main-tab" onclick="showTab('pedidos')">
+          <i class="fas fa-list"></i> Pedidos
+        </button>
+        <button class="main-tab" onclick="showTab('suporte')">
+          <i class="fas fa-headset"></i> Suporte
+        </button>
+      </div>
+
+      <!-- ===== INICIO ===== -->
+      <div class="tab-content active" id="tab-inicio">
+        <!-- HERO -->
+        <div class="hero">
+          <h1>O marketplace feito<br />para quem empreende 🚀</h1>
+          <p>
+            Conectamos microempreendedores aos clientes certos. Venda mais,
+            cresça mais!
+          </p>
+          <div class="hero-btns">
+            <button class="btn-white" onclick="openModal('modal-register')">
+              <i class="fas fa-store"></i> Abrir minha loja
+            </button>
+            <button class="btn-ghost" onclick="showTab('lojas')">
+              <i class="fas fa-search"></i> Explorar lojas
+            </button>
+          </div>
+        </div>
+
+        <!-- PROMOS -->
+        <div class="promo-grid">
+          <div class="promo-card promo-1" onclick="openModal('modal-coupon')">
+            <p>Especial de hoje</p>
+            <div class="discount">20% OFF</div>
+            <h3>Primeira compra!</h3>
+            <div class="coupon-badge">BEMVINDO20</div>
+          </div>
+          <div class="promo-card promo-2" onclick="openModal('modal-coupon')">
+            <p>Frete grátis</p>
+            <div class="discount">GRÁTIS</div>
+            <h3>Compras acima de R$99</h3>
+            <div class="coupon-badge">FRETEFACIL</div>
+          </div>
+          <div class="promo-card promo-3" onclick="openModal('modal-coupon')">
+            <p>Cashback especial</p>
+            <div class="discount">10%</div>
+            <h3>Em todas as farmácias</h3>
+            <div class="coupon-badge">SAUDE10</div>
+          </div>
+        </div>
+
+        <!-- CATEGORIES -->
+        <div class="section-title">
+          <h2>🗂️ <span>Categorias</span></h2>
+          <a class="see-all" onclick="showTab('lojas')">Ver todas →</a>
+        </div>
+        <div class="cat-grid" id="catGrid">
+          <div class="cat-card active" onclick="filterCat('todos', null, true)">
+            <div class="cat-icon" style="background: #fff0f6">
+              <span>🛍️</span>
+            </div>
+            <p>Todos</p>
+          </div>
+          <div class="cat-card" onclick="filterCat('tecnologia', null, true)">
+            <div class="cat-icon" style="background: #eff6ff">
+              <span>💻</span>
+            </div>
+            <p>Tecnologia</p>
+          </div>
+          <div class="cat-card" onclick="filterCat('farmacia', null, true)">
+            <div class="cat-icon" style="background: #f0fdf4">
+              <span>💊</span>
+            </div>
+            <p>Farmácia</p>
+          </div>
+          <div class="cat-card" onclick="filterCat('alimentacao', null, true)">
+            <div class="cat-icon" style="background: #fff7ed">
+              <span>🍔</span>
+            </div>
+            <p>Alimentação</p>
+          </div>
+          <div class="cat-card" onclick="filterCat('moda', null, true)">
+            <div class="cat-icon" style="background: #fdf4ff">
+              <span>👗</span>
+            </div>
+            <p>Moda</p>
+          </div>
+          <div class="cat-card" onclick="filterCat('beleza', null, true)">
+            <div class="cat-icon" style="background: #fff0f6">
+              <span>💄</span>
+            </div>
+            <p>Beleza</p>
+          </div>
+          <div class="cat-card" onclick="filterCat('pets', null, true)">
+            <div class="cat-icon" style="background: #fefce8">
+              <span>🐾</span>
+            </div>
+            <p>Pet Shop</p>
+          </div>
+          <div class="cat-card" onclick="filterCat('livros', null, true)">
+            <div class="cat-icon" style="background: #f0f9ff">
+              <span>📚</span>
+            </div>
+            <p>Livros</p>
+          </div>
+          <div class="cat-card" onclick="filterCat('esportes', null, true)">
+            <div class="cat-icon" style="background: #f0fdf4">
+              <span>⚽</span>
+            </div>
+            <p>Esportes</p>
+          </div>
+          <div class="cat-card" onclick="filterCat('casa', null, true)">
+            <div class="cat-icon" style="background: #fff7ed">
+              <span>🏠</span>
+            </div>
+            <p>Casa</p>
+          </div>
+          <div class="cat-card" onclick="filterCat('servicos', null, true)">
+            <div class="cat-icon" style="background: #fdf4ff">
+              <span>🔧</span>
+            </div>
+            <p>Serviços</p>
+          </div>
+          <div class="cat-card" onclick="filterCat('artesanato', null, true)">
+            <div class="cat-icon" style="background: #fff0f6">
+              <span>🎨</span>
+            </div>
+            <p>Artesanato</p>
+          </div>
+        </div>
+
+        <!-- LOJAS DESTAQUE -->
+        <div class="section-title">
+          <h2>⭐ <span>Lojas em Destaque</span></h2>
+          <a class="see-all" onclick="showTab('lojas')">Ver todas →</a>
+        </div>
+        <div class="stores-grid" id="storesHome"></div>
+      </div>
+
+      <!-- ===== LOJAS ===== -->
+      <div class="tab-content" id="tab-lojas">
+        <div class="section-title">
+          <h2>🏪 <span>Todas as Lojas</span></h2>
+        </div>
+        <div
+          id="storeFilterInfo"
+          style="
+            font-size: 14px;
+            color: var(--gray);
+            font-weight: 700;
+            margin-bottom: 16px;
+          "
+        ></div>
+        <div class="stores-grid" id="storesAll"></div>
+      </div>
+
+      <!-- ===== PRODUTOS ===== -->
+      <div class="tab-content" id="tab-produtos">
+        <div class="section-title">
+          <h2>📦 <span>Todos os Produtos</span></h2>
+        </div>
+        <div class="products-grid" id="productsAll"></div>
+      </div>
+
+      <!-- ===== MAPA ===== -->
+      <div class="tab-content" id="tab-mapa">
+        <div class="map-section">
+          <div class="map-header">
+            <h2>
+              <i class="fas fa-map-marker-alt" style="color: var(--rosa)"></i>
+              Lojas Próximas a Você
+            </h2>
+            <button class="btn btn-primary" onclick="locateUser()">
+              <i class="fas fa-location-arrow"></i> Minha Localização
+            </button>
+          </div>
+          <div id="map"></div>
+        </div>
+      </div>
+
+      <!-- ===== LOGÍSTICA ===== -->
+      <div class="tab-content" id="tab-logistica">
+        <div class="logistics-panel">
+          <h2>
+            <i class="fas fa-chart-line" style="color: var(--rosa)"></i> Painel
+            de Logística & Financeiro
+          </h2>
+
+          <div class="logistics-grid">
+            <div class="metric-card">
+              <div
+                class="metric-icon"
+                style="background: var(--rosa-pale); color: var(--rosa)"
+              >
+                <i class="fas fa-dollar-sign"></i>
+              </div>
+              <div class="metric-value">R$12.840</div>
+              <div class="metric-label">Faturamento Mensal</div>
+              <div class="metric-trend trend-up">▲ +18.3%</div>
+            </div>
+            <div class="metric-card">
+              <div
+                class="metric-icon"
+                style="background: var(--laranja-pale); color: var(--laranja)"
+              >
+                <i class="fas fa-shopping-bag"></i>
+              </div>
+              <div class="metric-value">248</div>
+              <div class="metric-label">Pedidos no Mês</div>
+              <div class="metric-trend trend-up">▲ +22 novos</div>
+            </div>
+            <div class="metric-card">
+              <div
+                class="metric-icon"
+                style="background: var(--amarelo-pale); color: #c8860a"
+              >
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="metric-value">1.432</div>
+              <div class="metric-label">Clientes Ativos</div>
+              <div class="metric-trend trend-up">▲ +8.1%</div>
+            </div>
+            <div class="metric-card">
+              <div
+                class="metric-icon"
+                style="background: #eff6ff; color: #2563eb"
+              >
+                <i class="fas fa-truck"></i>
+              </div>
+              <div class="metric-value">96.2%</div>
+              <div class="metric-label">Entregas no Prazo</div>
+              <div class="metric-trend trend-up">▲ Excelente</div>
+            </div>
+          </div>
+
+          <!-- MINI CHART -->
+          <div
+            style="
+              background: var(--gray-light);
+              border-radius: 16px;
+              padding: 20px;
+              margin-bottom: 24px;
+            "
+          >
+            <h3 style="font-size: 15px; font-weight: 900; margin-bottom: 4px">
+              Receita Semanal
+            </h3>
+            <p style="font-size: 12px; color: var(--gray); margin-bottom: 12px">
+              Últimos 7 dias
+            </p>
+            <div class="chart-bars" id="chartBars"></div>
+            <div
+              class="chart-bars"
+              id="chartLabels"
+              style="height: auto; margin-top: 4px"
+            ></div>
+          </div>
+
+          <!-- MAIS MÉTRICAS -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 16px;
+              margin-bottom: 24px;
+            "
+          >
+            <div class="metric-card">
+              <div
+                class="metric-icon"
+                style="background: var(--rosa-pale); color: var(--rosa)"
+              >
+                <i class="fas fa-percentage"></i>
+              </div>
+              <div class="metric-value">34%</div>
+              <div class="metric-label">Margem de Lucro</div>
+              <div class="metric-trend trend-up">▲ Meta: 30%</div>
+            </div>
+            <div class="metric-card">
+              <div
+                class="metric-icon"
+                style="background: var(--laranja-pale); color: var(--laranja)"
+              >
+                <i class="fas fa-redo"></i>
+              </div>
+              <div class="metric-value">68%</div>
+              <div class="metric-label">Taxa de Retorno</div>
+              <div class="metric-trend trend-up">▲ Acima da média</div>
+            </div>
+            <div class="metric-card">
+              <div
+                class="metric-icon"
+                style="background: #fef2f2; color: #dc2626"
+              >
+                <i class="fas fa-times-circle"></i>
+              </div>
+              <div class="metric-value">3.1%</div>
+              <div class="metric-label">Taxa de Cancelamento</div>
+              <div class="metric-trend trend-up">▼ Muito baixa</div>
+            </div>
+          </div>
+
+          <h3
+            style="
+              font-size: 18px;
+              font-weight: 900;
+              margin-bottom: 16px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            "
+          >
+            <i class="fas fa-list" style="color: var(--rosa)"></i> Gerenciamento
+            de Pedidos
+          </h3>
+          <div style="overflow-x: auto">
+            <table class="orders-table">
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Cliente</th>
+                  <th>Produto</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTable"></tbody>
+            </table>
+          </div>
+
+          <!-- FINANCIAMENTO -->
+          <div
+            style="
+              background: var(--grad1);
+              border-radius: 20px;
+              padding: 24px;
+              margin-top: 24px;
+              color: white;
+            "
+          >
+            <h3 style="font-size: 18px; font-weight: 900; margin-bottom: 8px">
+              💳 Financiamento para sua Loja
+            </h3>
+            <p style="font-size: 14px; opacity: 0.9; margin-bottom: 16px">
+              Com base no seu faturamento, você pode solicitar crédito de até:
+            </p>
+            <div style="font-size: 42px; font-weight: 900; margin-bottom: 16px">
+              R$ 38.520,00
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap">
+              <div
+                style="
+                  background: rgba(255, 255, 255, 0.2);
+                  border-radius: 12px;
+                  padding: 12px 20px;
+                  text-align: center;
+                "
+              >
+                <div style="font-size: 11px; opacity: 0.8">Taxa Mensal</div>
+                <div style="font-size: 18px; font-weight: 900">1.49%</div>
+              </div>
+              <div
+                style="
+                  background: rgba(255, 255, 255, 0.2);
+                  border-radius: 12px;
+                  padding: 12px 20px;
+                  text-align: center;
+                "
+              >
+                <div style="font-size: 11px; opacity: 0.8">Prazo</div>
+                <div style="font-size: 18px; font-weight: 900">até 24x</div>
+              </div>
+              <div
+                style="
+                  background: rgba(255, 255, 255, 0.2);
+                  border-radius: 12px;
+                  padding: 12px 20px;
+                  text-align: center;
+                "
+              >
+                <div style="font-size: 11px; opacity: 0.8">Aprovação</div>
+                <div style="font-size: 18px; font-weight: 900">Em 24h</div>
+              </div>
+            </div>
+            <button
+              class="btn-white"
+              style="margin-top: 16px"
+              onclick="
+                showToast('Solicitação enviada! Aguarde contato em até 24h. 🎉')
+              "
+            >
+              <i class="fas fa-hand-holding-usd"></i> Solicitar Crédito
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PEDIDOS ===== -->
+      <div class="tab-content" id="tab-pedidos">
+        <div class="logistics-panel">
+          <h2>
+            <i class="fas fa-box-open" style="color: var(--rosa)"></i> Meus
+            Pedidos
+          </h2>
+          <div
+            style="text-align: center; padding: 60px 20px; color: var(--gray)"
+          >
+            <i
+              class="fas fa-user-lock"
+              style="
+                font-size: 64px;
+                margin-bottom: 16px;
+                opacity: 0.2;
+                display: block;
+              "
+            ></i>
+            <p style="font-weight: 800; font-size: 16px; margin-bottom: 8px">
+              Faça login para ver seus pedidos
+            </p>
+            <p style="font-size: 13px; margin-bottom: 24px">
+              Acompanhe todas as suas compras em tempo real
+            </p>
+            <button class="btn btn-primary" onclick="openModal('modal-login')">
+              <i class="fas fa-sign-in-alt"></i> Entrar na conta
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SUPORTE ===== -->
+      <div class="tab-content" id="tab-suporte">
+        <div class="support-section">
+          <div class="support-info">
+            <h2>
+              <i class="fas fa-headset" style="color: var(--rosa)"></i> Central
+              de Suporte
+            </h2>
+            <p>
+              Estamos aqui para ajudar você! Nossa equipe está disponível de
+              segunda à sábado, das 8h às 20h. Escolha o canal de sua
+              preferência.
+            </p>
+            <div class="support-contact-cards">
+              <div
+                class="contact-card"
+                onclick="showToast('Abrindo WhatsApp... 📱')"
+              >
+                <div
+                  class="contact-icon"
+                  style="background: #d1fae5; color: #10b981"
+                >
+                  <i class="fab fa-whatsapp"></i>
+                </div>
+                <div>
+                  <h4>WhatsApp</h4>
+                  <p>(16) 99999-0000 · Resposta em minutos</p>
+                </div>
+              </div>
+              <div
+                class="contact-card"
+                onclick="showToast('Abrindo chat... 💬')"
+              >
+                <div
+                  class="contact-icon"
+                  style="background: var(--rosa-pale); color: var(--rosa)"
+                >
+                  <i class="fas fa-comment-dots"></i>
+                </div>
+                <div>
+                  <h4>Chat Online</h4>
+                  <p>Suporte ao vivo agora disponível</p>
+                </div>
+              </div>
+              <div
+                class="contact-card"
+                onclick="showToast('Abrindo e-mail... 📧')"
+              >
+                <div
+                  class="contact-icon"
+                  style="background: #eff6ff; color: #2563eb"
+                >
+                  <i class="fas fa-envelope"></i>
+                </div>
+                <div>
+                  <h4>E-mail</h4>
+                  <p>suporte@mercadofacil.com.br</p>
+                </div>
+              </div>
+              <div
+                class="contact-card"
+                onclick="showToast('Central de Ajuda... 📖')"
+              >
+                <div
+                  class="contact-icon"
+                  style="background: var(--amarelo-pale); color: #c8860a"
+                >
+                  <i class="fas fa-question-circle"></i>
+                </div>
+                <div>
+                  <h4>Central de Ajuda</h4>
+                  <p>Artigos e tutoriais completos</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 style="font-size: 18px; font-weight: 900; margin-bottom: 16px">
+              📝 Enviar Mensagem
+            </h3>
+            <div class="form-group">
+              <label>Seu nome</label>
+              <input type="text" placeholder="Como você se chama?" />
+            </div>
+            <div class="form-group">
+              <label>E-mail</label>
+              <input type="email" placeholder="seu@email.com" />
+            </div>
+            <div class="form-group">
+              <label>Assunto</label>
+              <select>
+                <option>Problema com pedido</option>
+                <option>Dúvida sobre cadastro</option>
+                <option>Problema com pagamento</option>
+                <option>Quero vender na plataforma</option>
+                <option>Outro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Mensagem</label>
+              <textarea
+                style="
+                  width: 100%;
+                  padding: 12px 16px;
+                  border: 2px solid #e5e7eb;
+                  border-radius: 10px;
+                  font-family: &quot;Nunito&quot;, sans-serif;
+                  font-size: 14px;
+                  resize: vertical;
+                  min-height: 100px;
+                  outline: none;
+                "
+                placeholder="Descreva sua dúvida ou problema..."
+              ></textarea>
+            </div>
+            <button
+              class="form-submit"
+              onclick="
+                showToast('Mensagem enviada! Responderemos em até 24h. ✉️')
+              "
+            >
+              <i class="fas fa-paper-plane"></i> Enviar Mensagem
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-info-box">
+          <h3>ℹ️ Sobre o MercadoFácil</h3>
+          <p>
+            O MercadoFácil é o marketplace dedicado a microempreendedores
+            brasileiros. Nossa plataforma conecta pequenos negócios a milhares
+            de consumidores, oferecendo ferramentas de gestão, logística
+            integrada e suporte financeiro. Cada loja cadastrada passa por
+            verificação de qualidade, garantindo uma experiência segura para
+            compradores e vendedores. Operamos com sistema de avaliações
+            transparente, protegendo a reputação de todos na plataforma.
+          </p>
+        </div>
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="logo">MercadoFácil</div>
+            <p>
+              O marketplace que acredita no poder do pequeno empreendedor. Mais
+              de 5.000 lojas cadastradas em todo o Brasil.
+            </p>
+          </div>
+          <div class="footer-col">
+            <h4>Para Compradores</h4>
+            <a>Como comprar</a>
+            <a>Formas de pagamento</a>
+            <a>Rastrear pedido</a>
+            <a>Política de troca</a>
+            <a>Proteção ao comprador</a>
+          </div>
+          <div class="footer-col">
+            <h4>Para Vendedores</h4>
+            <a>Abrir minha loja</a>
+            <a>Taxas e comissões</a>
+            <a>Gestão de vendas</a>
+            <a>Logística</a>
+            <a>Financiamento</a>
+          </div>
+          <div class="footer-col">
+            <h4>Institucional</h4>
+            <a>Sobre nós</a>
+            <a>Blog</a>
+            <a>Imprensa</a>
+            <a>Trabalhe conosco</a>
+            <a>Investidores</a>
+          </div>
+          <div class="footer-col">
+            <h4>Ajuda</h4>
+            <a>Central de ajuda</a>
+            <a>Termos de uso</a>
+            <a>Privacidade</a>
+            <a>Cookies</a>
+            <a onclick="showTab('suporte')">Contato</a>
+          </div>
+        </div>
+        <div class="footer-divider"></div>
+        <div class="footer-bottom">
+          <span>© 2026 PontoCom. Todos os direitos reservados.</span>
+          <div class="footer-badges">
+            <div class="footer-badge">🔒 SSL Seguro</div>
+            <div class="footer-badge">✓ Compra Protegida</div>
+            <div class="footer-badge">MEI Friendly</div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ===== MODALS ===== -->
+
+    <!-- LOGIN -->
+    <div class="modal-overlay" id="modal-login">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-login')">
+          <i class="fas fa-times"></i>
+        </button>
+        <h2>Bem-vindo de volta!</h2>
+        <p>Entre na sua conta e continue explorando</p>
+        <div class="form-group">
+          <label>E-mail</label
+          ><input type="email" placeholder="seu@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Senha</label><input type="password" placeholder="••••••••" />
+        </div>
+        <button
+          class="form-submit"
+          onclick="
+            closeModal('modal-login');
+            showToast('Login realizado com sucesso! 🎉');
+          "
+        >
+          <i class="fas fa-sign-in-alt"></i> Entrar
+        </button>
+        <div class="form-link">
+          Não tem conta?
+          <a
+            onclick="
+              closeModal('modal-login');
+              openModal('modal-register');
+            "
+            >Cadastre-se grátis</a
+          >
+        </div>
+        <div class="form-link" style="margin-top: 8px">
+          <a>Esqueci minha senha</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="modal-overlay" id="modal-register">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-register')">
+          <i class="fas fa-times"></i>
+        </button>
+        <h2>Crie sua conta!</h2>
+        <p>Escolha como você quer usar o MercadoFácil</p>
+        <div class="user-type-grid">
+          <div
+            class="user-type-card selected"
+            id="typeComprador"
+            onclick="selectType('comprador')"
+          >
+            <div class="icon">🛒</div>
+            <h3>Comprador</h3>
+            <p>Quero comprar produtos</p>
+          </div>
+          <div
+            class="user-type-card"
+            id="typeVendedor"
+            onclick="selectType('vendedor')"
+          >
+            <div class="icon">🏪</div>
+            <h3>Vendedor</h3>
+            <p>Quero vender meus produtos</p>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Nome completo</label
+          ><input type="text" placeholder="Seu nome" />
+        </div>
+        <div class="form-group">
+          <label>E-mail</label
+          ><input type="email" placeholder="seu@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Senha</label
+          ><input type="password" placeholder="Mínimo 8 caracteres" />
+        </div>
+        <div id="vendedorFields" style="display: none">
+          <div class="form-group">
+            <label>Nome da loja</label
+            ><input type="text" placeholder="Ex: Tech do João" />
+          </div>
+          <div class="form-group">
+            <label>Categoria</label>
+            <select>
+              <option>Tecnologia</option>
+              <option>Farmácia</option>
+              <option>Alimentação</option>
+              <option>Moda</option>
+              <option>Beleza</option>
+              <option>Pet Shop</option>
+              <option>Casa</option>
+              <option>Esportes</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>CNPJ / CPF (MEI)</label
+            ><input type="text" placeholder="00.000.000/0000-00" />
+          </div>
+        </div>
+        <button
+          class="form-submit"
+          onclick="
+            closeModal('modal-register');
+            showToast('Conta criada com sucesso! Bem-vindo(a)! 🎉');
+          "
+        >
+          <i class="fas fa-user-plus"></i> Criar Conta Grátis
+        </button>
+        <div class="form-link">
+          Já tem conta?
+          <a
+            onclick="
+              closeModal('modal-register');
+              openModal('modal-login');
+            "
+            >Fazer login</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- COUPON MODAL -->
+    <div class="modal-overlay" id="modal-coupon">
+      <div class="modal">
+        <button class="modal-close" onclick="closeModal('modal-coupon')">
+          <i class="fas fa-times"></i>
+        </button>
+        <h2>🎟️ Meus Cupons</h2>
+        <p>Use esses cupons exclusivos nas suas compras</p>
+        <div id="couponsGrid"></div>
+      </div>
+    </div>
+
+    <!-- STORE DETAIL MODAL -->
+    <div class="modal-overlay" id="modal-store">
+      <div class="modal store-modal">
+        <button
+          class="modal-close"
+          onclick="closeModal('modal-store')"
+          style="z-index: 10"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+        <div id="storeModalContent"></div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast">
+      <i class="fas fa-check-circle"></i>
+      <span id="toastMsg">Adicionado ao carrinho!</span>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
