@@ -241,6 +241,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 16px 40px 60px;}
 .plans-intro h2{font-size:24px;font-weight:900;margin-bottom:8px;}
 .plans-intro p{font-size:13px;color:var(--gray);}
 .plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px;align-items:stretch;}
+.plans-grid.plans-grid-4{grid-template-columns:repeat(4,1fr);gap:14px;}
 .plan-card{background:white;border-radius:20px;padding:26px 22px;box-shadow:var(--shadow);position:relative;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s;border:2px solid transparent;}
 .plan-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
 .plan-card.featured{border-color:var(--rosa);}
@@ -447,3 +448,37 @@ footer{background:var(--dark);color:white;padding:40px 16px 20px;margin-top:40px
 .mobile-bottom-bar .mbb-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px;font-size:9px;font-weight:700;color:var(--gray);transition:color .2s;border:none;background:none;font-family:'Nunito',sans-serif;}
 .mobile-bottom-bar .mbb-item i{font-size:18px;}
 .mobile-bottom-bar .mbb-item.active,.mobile-bottom-bar .mbb-item:hover{color:var(--rosa);}
+
+/* ── PLANOS / ASSINATURAS V2 ── */
+.plan-current-status{max-width:900px;margin:0 auto 22px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:center;gap:9px;font-size:12px;font-weight:700;color:var(--gray);}
+.plan-current-status i{color:var(--rosa);font-size:15px;}
+.plan-current-status.active-plan-status{background:#f0fdf4;border-color:#bbf7d0;color:#166534;}
+.plan-current-status.active-plan-status i{color:#16a34a;}
+.plan-commission{display:inline-flex;align-items:center;gap:4px;background:var(--gray-light);border-radius:9px;padding:7px 9px;font-size:11px;color:var(--gray);font-weight:700;margin-top:8px;}
+.plan-commission strong{font-size:14px;color:var(--dark);}
+.plan-card.current-plan{border-color:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.08),var(--shadow);}
+.plan-card.current-plan::after{content:'PLANO ATUAL';position:absolute;top:10px;right:10px;background:#dcfce7;color:#15803d;border-radius:20px;padding:3px 8px;font-size:8px;font-weight:900;letter-spacing:.5px;}
+.plan-current-btn,.plan-current-btn:disabled{background:#dcfce7!important;color:#15803d!important;border-color:#bbf7d0!important;box-shadow:none!important;cursor:default;opacity:1;}
+.store-plan-notice{margin:12px 0 14px;background:var(--rosa-pale);border:1px solid var(--rosa-light);border-radius:12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;color:var(--dark);font-weight:700;}
+.store-plan-notice>div{display:flex;align-items:center;gap:7px;min-width:0;}
+.store-plan-notice i{color:var(--rosa);}
+.store-plan-notice button{border:none;background:white;color:var(--rosa);font-family:'Nunito',sans-serif;font-size:10px;font-weight:900;border-radius:20px;padding:6px 10px;cursor:pointer;white-space:nowrap;}
+.user-plan-box{background:var(--rosa-pale);border:1px solid var(--rosa-light);border-radius:12px;padding:10px 12px;margin-bottom:12px;text-align:center;display:flex;flex-direction:column;gap:2px;}
+.user-plan-box span{font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--gray);font-weight:800;}
+.user-plan-box strong{font-size:14px;color:var(--rosa);}
+.user-plan-box small{font-size:10px;color:var(--gray);font-weight:700;}
+.seller-plan-manage-btn{background:#fff!important;color:var(--rosa)!important;border:2px solid var(--rosa)!important;}
+.plan-upgrade-modal .upgrade-kicker{display:inline-flex;align-items:center;gap:6px;background:var(--rosa-pale);color:var(--rosa);border-radius:20px;padding:5px 10px;font-size:10px;font-weight:900;margin-bottom:8px;}
+.plan-upgrade-modal h2{font-size:22px;font-weight:900;margin-bottom:4px;}
+.plan-upgrade-modal>p{font-size:12px;color:var(--gray);margin-bottom:14px;}
+.upgrade-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0;}
+.upgrade-summary>div{background:var(--gray-light);border-radius:12px;padding:11px;text-align:center;}
+.upgrade-summary span{display:block;font-size:9px;color:var(--gray);font-weight:800;margin-bottom:3px;}
+.upgrade-summary strong{font-size:13px;color:var(--dark);}
+.upgrade-benefits{list-style:none;margin:12px 0 14px;display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.upgrade-benefits li{font-size:11px;font-weight:700;display:flex;gap:7px;align-items:flex-start;background:white;border:1px solid #f0f0f0;border-radius:9px;padding:8px;}
+.upgrade-benefits i{color:#16a34a;margin-top:1px;}
+.upgrade-demo-warning{display:flex;align-items:flex-start;gap:8px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 12px;font-size:10px;line-height:1.5;margin-bottom:14px;}
+.upgrade-demo-warning i{margin-top:2px;}
+@media(max-width:1180px){.plans-grid.plans-grid-4{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:650px){.plans-grid.plans-grid-4{grid-template-columns:1fr;}.upgrade-summary{grid-template-columns:1fr;}.upgrade-benefits{grid-template-columns:1fr;}.store-plan-notice{align-items:flex-start;flex-direction:column;}}

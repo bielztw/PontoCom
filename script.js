@@ -48,8 +48,8 @@
    este bloco é protegido com try/catch.
 ═══════════════════════════════════════════ */
 const DB_CONFIG = {
-  url: "https://pvyjpdhwungounbocwel.supabase.co",     // ex: https://xxxxxxxx.supabase.co
-  key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2eWpwZGh3dW5nb3VuYm9jd2VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwMTQyMDMsImV4cCI6MjEwMjU5MDIwM30.8WR9BPZ08gKAlK9ymvp6TeErNlW6hkmk1kj2gSvC6KA"     // Project Settings → API → anon public
+  url: "https://asplxpufeencamiluvkb.supabase.co",     // ex: https://xxxxxxxx.supabase.co
+  key: "sb_publishable_HGW2_m67u4dMzy4DEVyoRA_X0OjNIHP"     // Project Settings → API → anon public
 };
 
 let dbGlobalOK = false;
@@ -57,8 +57,8 @@ let globalSyncInterval = null;
 
 function initGlobalDB() {
   try {
-    if (!DB_CONFIG.url || DB_CONFIG.url.indexOf('https://pvyjpdhwungounbocwel.supabase.co') === 0 ||
-        !DB_CONFIG.key || DB_CONFIG.key.indexOf('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2eWpwZGh3dW5nb3VuYm9jd2VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwMTQyMDMsImV4cCI6MjEwMjU5MDIwM30.8WR9BPZ08gKAlK9ymvp6TeErNlW6hkmk1kj2gSvC6KA') === 0) {
+    if (!DB_CONFIG.url || DB_CONFIG.url.indexOf('https://asplxpufeencamiluvkb.supabase.co/rest/v1/') === 0 ||
+        !DB_CONFIG.key || DB_CONFIG.key.indexOf('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzcGx4cHVmZWVuY2FtaWx1dmtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3OTEyNjYsImV4cCI6MjEwMzM2NzI2Nn0.P4YrAYRfOQs_5xBWnwP0ON53T9XDMV6eXyrgXgPJkGI') === 0) {
       console.warn('⚠️ Banco global não configurado ainda. Veja as instruções no topo do script.js.');
       dbGlobalOK = false;
       return false;
@@ -256,6 +256,65 @@ let appliedCoupon = null;  // { code, type, value, desc }
 let mapInstance = null;
 let vendorMarkers = {};    // email -> L.marker, evita duplicar pin no mapa
 
+
+// ── Assinaturas dos vendedores ──────────────────────────────────────────────
+// Em produção, configure aqui SOMENTE a URL do seu backend. Nunca coloque chave
+// secreta de gateway de pagamento no navegador. O backend deve criar o checkout
+// e confirmar a assinatura via webhook antes de marcar o plano como ativo.
+const SUBSCRIPTION_API_URL = '';
+
+const PLAN_CONFIG = {
+  free: {
+    key:'free', name:'Começar Local', monthly:0, priceLabel:'R$ 0/mês', commission:10,
+    productLimit:20, couponLimit:1, highlights:0, rank:0,
+    logistics:false, delivery:false,
+    benefits:['Até 20 produtos ativos','Loja e presença no mapa','Avaliações e reputação','1 cupom promocional por mês']
+  },
+  grow: {
+    key:'grow', name:'Crescer', monthly:39.90, priceLabel:'R$ 39,90/mês', commission:8,
+    productLimit:100, couponLimit:5, highlights:2, rank:1,
+    logistics:false, delivery:false,
+    benefits:['Até 100 produtos ativos','5 cupons por mês','2 destaques locais por mês','Relatórios de vendas']
+  },
+  pro: {
+    key:'pro', name:'Pro Local', monthly:79.90, priceLabel:'R$ 79,90/mês', commission:6,
+    productLimit:500, couponLimit:Infinity, highlights:10, rank:2,
+    logistics:true, delivery:false,
+    benefits:['Até 500 produtos ativos','Cupons ilimitados','10 destaques locais por mês','Painel financeiro e logístico']
+  },
+  scale: {
+    key:'scale', name:'Escala', monthly:149.90, priceLabel:'R$ 149,90/mês', commission:4.5,
+    productLimit:Infinity, couponLimit:Infinity, highlights:30, rank:3,
+    logistics:true, delivery:true,
+    benefits:['Produtos ilimitados','30 destaques locais por mês','Gestão completa de entregas','Roteirização, rastreamento e integrações']
+  }
+};
+let pendingPlanKey = null;
+
+function normalizeSellerPlan(user) {
+  if (!user || user.type !== 'vendedor') return null;
+  if (!PLAN_CONFIG[user.plan]) user.plan = 'free';
+  return user.plan;
+}
+function getCurrentPlanKey() {
+  if (!currentUser || currentUser.type !== 'vendedor') return null;
+  return normalizeSellerPlan(currentUser);
+}
+function getCurrentPlan() {
+  const key = getCurrentPlanKey();
+  return key ? PLAN_CONFIG[key] : null;
+}
+function formatPlanLimit(limit) { return limit === Infinity ? 'Ilimitados' : String(limit); }
+function canUsePlanFeature(feature) {
+  const plan = getCurrentPlan();
+  return !!plan && !!plan[feature];
+}
+function hasPlanAtLeast(planKey) {
+  const current = getCurrentPlan();
+  const required = PLAN_CONFIG[planKey];
+  return !!current && !!required && current.rank >= required.rank;
+}
+
 // Emoji do pin no mapa de acordo com a categoria escolhida no cadastro
 const CAT_EMOJI = {
   'Tecnologia':'💻','Farmácia':'💊','Alimentação':'🍔','Moda':'👗',
@@ -329,7 +388,7 @@ async function doRegister() {
   const storeName = document.getElementById('regStore')?.value||'';
   const doc       = document.getElementById('regDoc')?.value||'';
   const catSel    = document.getElementById('regCat')?.value||'';
-  const user = { email, name, password:pass, type, avatar:name.charAt(0).toUpperCase(), storeName, doc, catSel, createdAt: new Date().toISOString() };
+  const user = { email, name, password:pass, type, avatar:name.charAt(0).toUpperCase(), storeName, doc, catSel, plan:type==='vendedor'?'free':null, createdAt: new Date().toISOString() };
 
   // Se for vendedor, tenta capturar a localização para posicionar a loja no mapa
   if (type === 'vendedor') {
@@ -391,6 +450,7 @@ async function doLogin() {
 
 function loginUser(user) {
   currentUser = user;
+  normalizeSellerPlan(currentUser);
   document.getElementById('authButtons').style.display = 'none';
   document.getElementById('userChip').classList.add('visible');
   document.getElementById('userAvatarSm').textContent = user.avatar;
@@ -400,6 +460,7 @@ function loginUser(user) {
   document.getElementById('menuLogoutItem').style.display   = 'flex';
   updatePedidosTab();
   updateUIForUserType();
+  renderPlanUI();
 }
 
 async function doLogout() {
@@ -412,6 +473,7 @@ async function doLogout() {
   document.getElementById('menuLogoutItem').style.display   = 'none';
   updatePedidosTab();
   updateUIForUserType();
+  renderPlanUI();
   const logisticaTab = document.getElementById('tab-logistica');
   if (logisticaTab && logisticaTab.classList.contains('active')) { showTab('inicio'); }
   showToast('👋 Você saiu da conta.','info');
@@ -427,9 +489,9 @@ function openUserMenu() {
       <p style="font-size:12px;color:var(--gray);margin-bottom:6px;">${u.email}</p>
       <span style="background:var(--rosa-pale);color:var(--rosa);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:800;">${u.type==='vendedor'?'🏪 Vendedor':'🛒 Comprador'}</span>
     </div>
-    ${u.type==='vendedor'?`<div style="background:var(--gray-light);border-radius:12px;padding:12px;margin-bottom:14px;text-align:center;"><p style="font-size:10px;color:var(--gray);">Loja</p><p style="font-weight:800;font-size:14px;">${u.storeName||u.name+' Store'}</p><p style="font-size:10px;color:var(--gray);">CNPJ/MEI: ${u.doc||'—'}</p></div>`:''}
+    ${u.type==='vendedor'?`<div style="background:var(--gray-light);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><p style="font-size:10px;color:var(--gray);">Loja</p><p style="font-weight:800;font-size:14px;">${u.storeName||u.name+' Store'}</p><p style="font-size:10px;color:var(--gray);">CNPJ/MEI: ${u.doc||'—'}</p></div><div class="user-plan-box"><span>Plano atual</span><strong>${getCurrentPlan()?.name||'Começar Local'}</strong><small>${getCurrentPlan()?.priceLabel||'R$ 0/mês'} · ${String(getCurrentPlan()?.commission||10).replace('.',',')}% por venda</small></div>`:''}
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:11px;font-weight:700;color:#15803d;display:flex;align-items:center;gap:6px;"><i class="fas fa-database"></i> Dados salvos no IndexedDB</div>
-    ${u.type==='vendedor'?`<button class="form-submit" style="margin-bottom:10px;background:var(--grad1);" onclick="closeModal('modal-user');openStoreSetupModal()"><i class="fas fa-store"></i> Cadastrar/Gerenciar Loja e Produtos</button>`:''}
+    ${u.type==='vendedor'?`<button class="form-submit" style="margin-bottom:10px;background:var(--grad1);" onclick="closeModal('modal-user');openStoreSetupModal()"><i class="fas fa-store"></i> Cadastrar/Gerenciar Loja e Produtos</button><button class="form-submit seller-plan-manage-btn" style="margin-bottom:10px;" onclick="closeModal('modal-user');showTab('planos')"><i class="fas fa-gem"></i> Gerenciar meu plano</button>`:''}
     <button class="form-submit" style="margin-bottom:10px;" onclick="closeModal('modal-user');showTab('pedidos')"><i class="fas fa-box"></i> Meus Pedidos</button>
     <button style="width:100%;background:#fef2f2;color:#dc2626;border:none;padding:12px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;" onclick="closeModal('modal-user');doLogout()"><i class="fas fa-sign-out-alt"></i> Sair da Conta</button>
   `;
@@ -970,13 +1032,16 @@ function goHome() {
 function setActiveMbb(el) { document.querySelectorAll('.mbb-item').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
 
 function showTab(tab) {
-  // Painel Logístico é exclusivo para contas do tipo "vendedor"
+  // O painel logístico completo começa no Pro Local.
   if (tab === 'logistica' && !canAccessLogistica()) {
     if (!currentUser) {
       showToast('🔒 Faça login como vendedor para acessar a Logística.','info');
       openModal('modal-login');
+    } else if (currentUser.type !== 'vendedor') {
+      showToast('🔒 O Painel Logístico é exclusivo para lojistas.','error');
     } else {
-      showToast('🔒 O Painel Logístico é exclusivo para lojistas (vendedores).','error');
+      showToast('🔒 O Painel Logístico completo está disponível a partir do Pro Local.','info');
+      showTab('planos');
     }
     return;
   }
@@ -989,21 +1054,131 @@ function showTab(tab) {
   if (mt) mt.classList.add('active');
   if (tab==='mapa')      initMap();
   if (tab==='logistica') { renderChart(); renderOrders(); }
+  if (tab==='planos') renderPlanUI();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function choosePlan(planName) {
-  showToast(`Plano ${planName} selecionado! Redirecionando para o pagamento... 🎉`, 'success');
+function renderPlanUI() {
+  const status = document.getElementById('planCurrentStatus');
+  const currentKey = getCurrentPlanKey();
+  const current = currentKey ? PLAN_CONFIG[currentKey] : null;
+
+  if (status) {
+    if (!currentUser) {
+      status.className = 'plan-current-status';
+      status.innerHTML = '<i class="fas fa-circle-info"></i><span>Entre como vendedor para acompanhar seu plano atual.</span>';
+    } else if (currentUser.type !== 'vendedor') {
+      status.className = 'plan-current-status';
+      status.innerHTML = '<i class="fas fa-store"></i><span>Os planos abaixo são destinados aos microempreendedores vendedores.</span>';
+    } else {
+      status.className = 'plan-current-status active-plan-status';
+      status.innerHTML = `<i class="fas fa-circle-check"></i><span>Seu plano atual é <strong>${current.name}</strong> — ${current.priceLabel}, ${String(current.commission).replace('.',',')}% de comissão e ${formatPlanLimit(current.productLimit)} produtos.</span>`;
+    }
+  }
+
+  document.querySelectorAll('[data-plan-card]').forEach(card => {
+    card.classList.toggle('current-plan', !!currentKey && card.dataset.planCard === currentKey);
+  });
+  document.querySelectorAll('[data-plan-button]').forEach(btn => {
+    const key = btn.dataset.planButton;
+    const cfg = PLAN_CONFIG[key];
+    if (currentKey === key) {
+      btn.innerHTML = '<i class="fas fa-circle-check"></i> Plano atual';
+      btn.classList.add('plan-current-btn');
+      btn.disabled = true;
+    } else {
+      btn.disabled = false;
+      btn.classList.remove('plan-current-btn');
+      if (!current) btn.innerHTML = `<i class="fas fa-rocket"></i> ${key==='free'?'Começar grátis':'Escolher '+cfg.name}`;
+      else if (cfg.rank > current.rank) btn.innerHTML = `<i class="fas fa-arrow-up"></i> Fazer upgrade`;
+      else btn.innerHTML = `<i class="fas fa-arrow-down"></i> Trocar para ${cfg.name}`;
+    }
+  });
 }
 
-function canAccessLogistica() { return !!currentUser && currentUser.type === 'vendedor'; }
+function choosePlan(planKey) {
+  const plan = PLAN_CONFIG[planKey];
+  if (!plan) return;
+  if (!currentUser) {
+    showToast('Crie ou acesse uma conta de vendedor para escolher um plano.','info');
+    openModal('modal-login');
+    return;
+  }
+  if (currentUser.type !== 'vendedor') {
+    showToast('Os planos são exclusivos para contas de vendedor.','info');
+    openModal('modal-register');
+    selectType('vendedor');
+    return;
+  }
+  if (getCurrentPlanKey() === planKey) {
+    showToast(`Você já está no plano ${plan.name}.`,'info');
+    return;
+  }
 
-// Atualiza a aparência dos atalhos de Logística conforme o tipo de usuário logado
+  pendingPlanKey = planKey;
+  document.getElementById('upgradePlanTitle').textContent = plan.name;
+  document.getElementById('upgradePlanSubtitle').textContent = plan.monthly === 0
+    ? 'Plano de entrada sem mensalidade para começar a vender localmente.'
+    : 'Revise os benefícios. Neste protótipo, a ativação é apenas uma simulação.';
+  document.getElementById('upgradePlanPrice').textContent = plan.priceLabel;
+  document.getElementById('upgradePlanCommission').textContent = String(plan.commission).replace('.',',') + '%';
+  document.getElementById('upgradePlanProducts').textContent = formatPlanLimit(plan.productLimit);
+  document.getElementById('upgradePlanBenefits').innerHTML = plan.benefits.map(b=>`<li><i class="fas fa-check-circle"></i>${b}</li>`).join('');
+  const confirm = document.getElementById('confirmPlanBtn');
+  confirm.innerHTML = plan.monthly === 0
+    ? '<i class="fas fa-check"></i> Ativar Começar Local'
+    : '<i class="fas fa-credit-card"></i> Continuar com este plano';
+  openModal('modal-plan-upgrade');
+}
+
+async function confirmPlanChange() {
+  if (!pendingPlanKey || !currentUser || currentUser.type !== 'vendedor') return;
+  const plan = PLAN_CONFIG[pendingPlanKey];
+
+  // Ponto de integração real: se houver um backend configurado e o plano for pago,
+  // ele deve criar uma sessão de checkout e devolver { checkoutUrl }. A ativação real
+  // do plano deve acontecer somente depois do webhook do provedor de pagamento.
+  if (plan.monthly > 0 && SUBSCRIPTION_API_URL) {
+    try {
+      const res = await fetch(SUBSCRIPTION_API_URL + '/checkout', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ plan:plan.key, sellerEmail:currentUser.email })
+      });
+      if (!res.ok) throw new Error('checkout');
+      const data = await res.json();
+      if (data.checkoutUrl) { window.location.href = data.checkoutUrl; return; }
+      throw new Error('checkoutUrl ausente');
+    } catch (e) {
+      showToast('Não foi possível iniciar o checkout. Tente novamente.','error');
+      return;
+    }
+  }
+
+  // Modo protótipo: ativa localmente para permitir testar limites e recursos.
+  currentUser.plan = plan.key;
+  currentUser.subscription = {
+    plan:plan.key, status:'prototype', updatedAt:new Date().toISOString()
+  };
+  await dbSaveUser(currentUser);
+  closeModal('modal-plan-upgrade');
+  pendingPlanKey = null;
+  updateUIForUserType();
+  renderPlanUI();
+  renderStorePlanNotice();
+  showToast(`✅ Plano ${plan.name} ativado no modo protótipo!`,'success');
+}
+
+function canAccessLogistica() {
+  return !!currentUser && currentUser.type === 'vendedor' && canUsePlanFeature('logistics');
+}
+
+// Atualiza a aparência dos atalhos de Logística conforme tipo e plano do usuário.
 function updateUIForUserType() {
   const allowed = canAccessLogistica();
+  const seller = !!currentUser && currentUser.type === 'vendedor';
   document.querySelectorAll('[data-logistica-link]').forEach(elmt => {
     elmt.classList.toggle('locked-feature', !allowed);
-    elmt.title = allowed ? '' : 'Exclusivo para vendedores';
+    elmt.title = allowed ? '' : (seller ? 'Disponível a partir do Pro Local' : 'Exclusivo para vendedores');
   });
 }
 
@@ -1101,6 +1276,8 @@ function ensureUserIsSeller() {
 
 async function openStoreSetupModal() {
   if (!ensureUserIsSeller()) return;
+  normalizeSellerPlan(currentUser);
+  renderStorePlanNotice();
 
   // Se já existe uma loja salva para esse vendedor, pré-preenche os campos (modo edição)
   const existing = await dbGetStoreByOwner(currentUser.email);
@@ -1123,6 +1300,14 @@ async function openStoreSetupModal() {
 
 function addProductRow(data) {
   data = data || {};
+  const plan = getCurrentPlan();
+  const currentRows = document.querySelectorAll('#ssProductsList .ss-product-row').length;
+  if (!data.name && plan && plan.productLimit !== Infinity && currentRows >= plan.productLimit) {
+    showToast(`Seu plano ${plan.name} permite até ${plan.productLimit} produtos. Faça upgrade para adicionar mais.`, 'info');
+    showTab('planos');
+    closeModal('modal-store-setup');
+    return;
+  }
   ssProductRowCount++;
   const rowId = 'ssrow' + ssProductRowCount;
   const wrap = document.createElement('div');
@@ -1138,6 +1323,15 @@ function addProductRow(data) {
     </div>
     <input type="text" class="ss-p-desc" placeholder="Descrição do produto (opcional)" value="${esc(data.desc)}">`;
   document.getElementById('ssProductsList').appendChild(wrap);
+}
+
+function renderStorePlanNotice() {
+  const el = document.getElementById('storePlanNotice');
+  if (!el || !currentUser || currentUser.type !== 'vendedor') return;
+  const plan = getCurrentPlan();
+  const existingCount = products.filter(p => p.ownerEmail === currentUser.email).length;
+  const limit = formatPlanLimit(plan.productLimit);
+  el.innerHTML = `<div><i class="fas fa-gem"></i><span><strong>${plan.name}</strong> · ${existingCount}/${limit} produtos usados · ${String(plan.commission).replace('.',',')}% de comissão</span></div><button type="button" onclick="closeModal('modal-store-setup');showTab('planos')">Ver planos</button>`;
 }
 
 function removeProductRow(rowId) {
@@ -1178,10 +1372,16 @@ async function saveStoreSetup() {
     return;
   }
 
+  const activePlan = getCurrentPlan();
+  if (activePlan && activePlan.productLimit !== Infinity && newProducts.length > activePlan.productLimit) {
+    showToast(`O plano ${activePlan.name} permite até ${activePlan.productLimit} produtos ativos.`, 'error');
+    return;
+  }
+
   // Salva a loja no IndexedDB
   const storeRecord = {
     ownerEmail: currentUser.email,
-    name: storeName, cat, emoji, desc,
+    name: storeName, cat, emoji, desc, plan: getCurrentPlanKey(),
     products: newProducts,
     updatedAt: new Date().toISOString()
   };
@@ -1283,6 +1483,7 @@ async function boot() {
   updateCart();
   updatePedidosTab();
   updateUIForUserType();
+  renderPlanUI();
   initCarousel();
 }
 
