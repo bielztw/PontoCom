@@ -57,8 +57,8 @@ let globalSyncInterval = null;
 
 function initGlobalDB() {
   try {
-    if (!DB_CONFIG.url || DB_CONFIG.url.indexOf('COLE_AQUI') === 0 ||
-        !DB_CONFIG.key || DB_CONFIG.key.indexOf('COLE_AQUI') === 0) {
+    if (!DB_CONFIG.url || DB_CONFIG.url.indexOf('https://pvyjpdhwungounbocwel.supabase.co') === 0 ||
+        !DB_CONFIG.key || DB_CONFIG.key.indexOf('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2eWpwZGh3dW5nb3VuYm9jd2VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwMTQyMDMsImV4cCI6MjEwMjU5MDIwM30.8WR9BPZ08gKAlK9ymvp6TeErNlW6hkmk1kj2gSvC6KA') === 0) {
       console.warn('⚠️ Banco global não configurado ainda. Veja as instruções no topo do script.js.');
       dbGlobalOK = false;
       return false;
@@ -272,7 +272,7 @@ const CAT_COLOR = {
 const stores = [
   {id:1,name:'TechZone BR',cat:'tecnologia',emoji:'💻',cover:'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=120&fit=crop',rating:4.9,reviews:312,badge:'🏆 Top',tags:['Eletrônicos','Gadgets','Acessórios'],desc:'Especializada em gadgets e eletrônicos para o dia a dia.',products:[{n:'Fone Bluetooth',p:'R$189',e:'🎧',old:'R$249'},{n:'Mouse Gamer',p:'R$139',e:'🖱️',old:'R$199'},{n:'Webcam HD',p:'R$229',e:'📷',old:'R$299'}],comments:[{u:'Maria S.',t:5,c:'Produtos incríveis e entrega rápida!'},{u:'João P.',t:5,c:'Melhor loja de tecnologia da plataforma.'}]},
   {id:2,name:'FarmaVida',cat:'farmacia',emoji:'💊',cover:'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400&h=120&fit=crop',rating:4.8,reviews:198,badge:'✅ Verificado',tags:['Medicamentos','Vitaminas','Higiene'],desc:'Farmácia com produtos de saúde e bem-estar.',products:[{n:'Vitamina C 1g',p:'R$29',e:'🍊',old:'R$39'},{n:'Protetor Solar',p:'R$45',e:'🧴',old:'R$65'},{n:'Termômetro',p:'R$35',e:'🌡️',old:'R$49'}],comments:[{u:'Ana R.',t:5,c:'Medicamentos de qualidade e preço justo!'},{u:'Carlos M.',t:4,c:'Bom atendimento e entrega pontual.'}]},
-  {id:3,name:'Sabor da Vó',cat:'alimentacao',emoji:'🍰',cover:'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&h=120&fit=crop',rating:5.0,reviews:547,badge:'⭐ Favorito',tags:['Doces','Salgados','Artesanal'],desc:'Comida artesanal feita com amor e ingredientes frescos.',products:[{n:'Bolo de Cenoura',p:'R$55',e:'🥕',old:''},{n:'Coxinhas 12un',p:'R$38',e:'🍗',old:''},{n:'Pão de Queijo',p:'R$28',e:'🧀',old:'R$35'}],comments:[{u:'Lucia F.',t:5,c:'Incrível! Bolo perfeito!'},{u:'Rafael T.',t:5,c:'Melhor comida artesanal!'}]},
+  {id:3,name:'Sabor da Vó',cat:'alimentacao',emoji:'🍰',cover:'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&h=120&fit=crop',rating:5.0,reviews:547,badge:'⭐ Favorito',tags:['Doces','Salgados','Artesanal'],desc:'Comida artesanal feita com amor e ingredientes frescos.',products:[{n:'Bolo de Cenoura',p:'R$30',e:'🥕',old:''},{n:'Coxinhas 12un',p:'R$38',e:'🍗',old:''},{n:'Pão de Queijo',p:'R$28',e:'🧀',old:'R$35'}],comments:[{u:'Lucia F.',t:5,c:'Incrível! Bolo perfeito!'},{u:'Rafael T.',t:5,c:'Melhor comida artesanal!'}]},
   {id:4,name:'ModaFácil',cat:'moda',emoji:'👗',cover:'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=400&h=120&fit=crop',rating:4.7,reviews:203,badge:'🆕 Novo',tags:['Roupas','Acessórios','Plus Size'],desc:'Moda para todos os estilos e tamanhos.',products:[{n:'Vestido Floral',p:'R$89',e:'👗',old:'R$129'},{n:'Bolsa Tote',p:'R$79',e:'👜',old:'R$109'},{n:'Óculos de Sol',p:'R$59',e:'🕶️',old:''}],comments:[{u:'Fernanda L.',t:5,c:'Roupas lindas e tamanhos inclusivos!'},{u:'Bruna S.',t:4,c:'Boa qualidade pelo preço.'}]},
   {id:5,name:'Bela & Cia',cat:'beleza',emoji:'💄',cover:'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=120&fit=crop',rating:4.8,reviews:421,badge:'🌸 Premium',tags:['Maquiagem','Skincare','Cabelos'],desc:'Beleza e autocuidado para você brilhar.',products:[{n:'Batom Matte',p:'R$35',e:'💄',old:'R$49'},{n:'Sérum Facial',p:'R$129',e:'✨',old:'R$179'},{n:'Paleta Sombras',p:'R$89',e:'🎨',old:'R$119'}],comments:[{u:'Camila R.',t:5,c:'Produtos incríveis! Minha pele agradece!'},{u:'Isabella M.',t:5,c:'Maquiagem de longa duração.'}]},
   {id:6,name:'PetAmor',cat:'pets',emoji:'🐾',cover:'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=120&fit=crop',rating:4.9,reviews:189,badge:'🐶 Especialista',tags:['Rações','Brinquedos','Acessórios'],desc:'Tudo para o bem-estar e felicidade do seu pet.',products:[{n:'Ração Premium 10kg',p:'R$189',e:'🐕',old:'R$239'},{n:'Arranhador Gato',p:'R$149',e:'🐈',old:''},{n:'Coleira LED',p:'R$45',e:'💡',old:'R$69'}],comments:[{u:'Pedro A.',t:5,c:'Meu cachorro ama a ração daqui!'},{u:'Sandra B.',t:5,c:'Excelente qualidade!'}]},
@@ -282,7 +282,7 @@ const products = [
   {id:1,name:'Fone Bluetooth Pro',price:189,emoji:'🎧',store:'TechZone BR',cat:'tecnologia',discount:'-24%',old:249,desc:'Fone Bluetooth 5.0 com cancelamento de ruído, 30h de bateria e microfone embutido.'},
   {id:2,name:'Mouse Gamer RGB',price:139,emoji:'🖱️',store:'TechZone BR',cat:'tecnologia',discount:'-30%',old:199,desc:'Mouse gamer 7200 DPI, iluminação RGB e 6 botões programáveis. Design ergonômico.'},
   {id:3,name:'Vitamina C 1g',price:29,emoji:'🍊',store:'FarmaVida',cat:'farmacia',discount:'-25%',old:39,desc:'Vitamina C efervescente 1000mg sabor laranja. Fortalece a imunidade. Caixa c/ 10.'},
-  {id:4,name:'Bolo de Cenoura 1kg',price:55,emoji:'🥕',store:'Sabor da Vó',cat:'alimentacao',discount:'',old:0,desc:'Bolo de cenoura artesanal com cobertura de chocolate belga. Sem conservantes.'},
+  {id:4,name:'Bolo de Cenoura 1kg',price:30,emoji:'🥕',store:'Sabor da Vó',cat:'alimentacao',discount:'',old:0,desc:'Bolo de cenoura artesanal com cobertura de chocolate belga. Sem conservantes.'},
   {id:5,name:'Vestido Floral M',price:89,emoji:'👗',store:'ModaFácil',cat:'moda',discount:'-31%',old:129,desc:'Vestido floral manga longa, tecido leve. Disponível nos tamanhos P ao G3.'},
   {id:6,name:'Sérum Facial 30ml',price:129,emoji:'✨',store:'Bela & Cia',cat:'beleza',discount:'-28%',old:179,desc:'Sérum com vitamina C e ácido hialurônico para pele iluminada e hidratada.'},
   {id:7,name:'Ração Premium 10kg',price:189,emoji:'🐕',store:'PetAmor',cat:'pets',discount:'-21%',old:239,desc:'Ração para cães adultos com frango e arroz. Sem corantes artificiais.'},
@@ -304,7 +304,7 @@ const coupons = [
 const orders = [
   {id:'#001234',client:'Maria Silva',product:'Fone Bluetooth',val:'R$189',status:'pago',date:'10/01/2025',qty:1,pay:'Pix',addr:'Rua das Flores, 120 — Franca/SP',store:'TechZone BR'},
   {id:'#001235',client:'João Pereira',product:'Vitamina C 1g',val:'R$29',status:'enviado',date:'11/01/2025',qty:2,pay:'Cartão de Crédito',addr:'Av. Brasil, 890 — Franca/SP',store:'FarmaVida'},
-  {id:'#001236',client:'Ana Souza',product:'Bolo de Cenoura',val:'R$55',status:'pendente',date:'12/01/2025',qty:1,pay:'Boleto',addr:'Rua 7 de Setembro, 45 — Franca/SP',store:'Sabor da Vó'},
+  {id:'#001236',client:'Ana Souza',product:'Bolo de Cenoura',val:'R$30',status:'pendente',date:'12/01/2025',qty:1,pay:'Boleto',addr:'Rua 7 de Setembro, 45 — Franca/SP',store:'Sabor da Vó'},
   {id:'#001237',client:'Carlos Lima',product:'Vestido Floral',val:'R$89',status:'pago',date:'12/01/2025',qty:1,pay:'Pix',addr:'Rua Minas Gerais, 310 — Franca/SP',store:'ModaFácil'},
   {id:'#001238',client:'Fernanda Costa',product:'Sérum Facial',val:'R$129',status:'enviado',date:'13/01/2025',qty:1,pay:'Cartão de Crédito',addr:'Rua Paraná, 77 — Franca/SP',store:'Bela & Cia'},
   {id:'#001239',client:'Ricardo Alves',product:'Ração Premium',val:'R$189',status:'cancelado',date:'13/01/2025',qty:1,pay:'Pix',addr:'Rua Bahia, 512 — Franca/SP',store:'PetAmor'},
@@ -325,17 +325,11 @@ async function doRegister() {
   if (pass.length < 6)         { document.getElementById('regPassErr').classList.add('show'); ok=false; }
   if (!ok) return;
 
-  const type      = document.getElementById('typeVendedor').classList.contains('selected')   ? 'vendedor'
-                   : document.getElementById('typeEntregador').classList.contains('selected') ? 'entregador'
-                   : 'comprador';
+  const type      = document.getElementById('typeVendedor').classList.contains('selected') ? 'vendedor' : 'comprador';
   const storeName = document.getElementById('regStore')?.value||'';
   const doc       = document.getElementById('regDoc')?.value||'';
   const catSel    = document.getElementById('regCat')?.value||'';
-  const veiculo   = document.getElementById('regVeiculo')?.value||'';
-  const placa     = document.getElementById('regPlaca')?.value||'';
-  const cnh       = document.getElementById('regCnh')?.value||'';
-  const regiao    = document.getElementById('regRegiao')?.value||'';
-  const user = { email, name, password:pass, type, avatar:name.charAt(0).toUpperCase(), storeName, doc, catSel, veiculo, placa, cnh, regiao, createdAt: new Date().toISOString() };
+  const user = { email, name, password:pass, type, avatar:name.charAt(0).toUpperCase(), storeName, doc, catSel, createdAt: new Date().toISOString() };
 
   // Se for vendedor, tenta capturar a localização para posicionar a loja no mapa
   if (type === 'vendedor') {
@@ -355,8 +349,6 @@ async function doRegister() {
     addStoreToMap(user);
     showToast('🎉 Conta criada! Falta pouco: cadastre sua loja e produtos.','success');
     setTimeout(() => openStoreSetupModal(), 500);
-  } else if (type === 'entregador') {
-    showToast('🛵 Cadastro de entregador realizado! Em breve você receberá corridas disponíveis.','success');
   } else {
     showToast('🎉 Conta criada! Bem-vindo(a), '+name.split(' ')[0]+'!','success');
   }
@@ -463,6 +455,61 @@ function updatePedidosTab() {
    RENDER
 ═══════════════════════════════════════════ */
 function fmtPrice(n) { return 'R$ '+n.toFixed(2).replace('.',','); }
+
+/* ── CARROSSEL INTERATIVO (página inicial) ── */
+const CAROUSEL_SLIDES = 4;
+let carouselIndex = 0;
+let carouselTimer = null;
+
+function renderCarouselDots() {
+  const dotsEl = document.getElementById('carouselDots');
+  if (!dotsEl) return;
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < CAROUSEL_SLIDES; i++) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'carousel-dot' + (i === carouselIndex ? ' active' : '');
+    b.setAttribute('aria-label', 'Ir para o slide ' + (i + 1));
+    b.onclick = () => carouselGoTo(i);
+    dotsEl.appendChild(b);
+  }
+}
+
+function carouselGoTo(i) {
+  carouselIndex = (i + CAROUSEL_SLIDES) % CAROUSEL_SLIDES;
+  const track = document.getElementById('carouselTrack');
+  if (track) track.style.transform = 'translateX(-' + (carouselIndex * (100 / CAROUSEL_SLIDES)) + '%)';
+  renderCarouselDots();
+  restartCarouselAutoplay();
+}
+
+function carouselMove(dir) { carouselGoTo(carouselIndex + dir); }
+
+function startCarouselAutoplay() {
+  carouselTimer = setInterval(() => carouselGoTo(carouselIndex + 1), 5000);
+}
+function stopCarouselAutoplay() { if (carouselTimer) { clearInterval(carouselTimer); carouselTimer = null; } }
+function restartCarouselAutoplay() { stopCarouselAutoplay(); startCarouselAutoplay(); }
+
+function initCarousel() {
+  const el = document.getElementById('heroCarousel');
+  if (!el) return;
+  renderCarouselDots();
+  startCarouselAutoplay();
+
+  // Pausa o autoplay enquanto o mouse está sobre o carrossel
+  el.addEventListener('mouseenter', stopCarouselAutoplay);
+  el.addEventListener('mouseleave', startCarouselAutoplay);
+
+  // Suporte a arrastar/deslizar (swipe) no celular
+  let touchStartX = 0;
+  el.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  el.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) carouselMove(dx > 0 ? -1 : 1);
+  }, { passive: true });
+}
+
 
 function renderStores(list, targetId) {
   const el = document.getElementById(targetId); if (!el) return;
@@ -905,9 +952,7 @@ function showToast(msg, type='success') {
 function selectType(type) {
   document.getElementById('typeComprador').classList.toggle('selected', type==='comprador');
   document.getElementById('typeVendedor').classList.toggle('selected', type==='vendedor');
-  document.getElementById('typeEntregador').classList.toggle('selected', type==='entregador');
-  document.getElementById('vendedorFields').style.display   = type==='vendedor'   ? 'block' : 'none';
-  document.getElementById('entregadorFields').style.display = type==='entregador' ? 'block' : 'none';
+  document.getElementById('vendedorFields').style.display = type==='vendedor' ? 'block' : 'none';
 }
 function scrollToTop() { window.scrollTo({top:0,behavior:'smooth'}); }
 
@@ -964,6 +1009,7 @@ function updateUIForUserType() {
 
 function filterCat(cat, btn) {
   if (btn) { document.querySelectorAll('.nav-cat').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+  showTab('lojas');
   const list = cat==='todos' ? stores : stores.filter(s=>s.cat===cat);
   renderStores(list, 'storesAll');
   const info = document.getElementById('storeFilterInfo');
@@ -1237,6 +1283,7 @@ async function boot() {
   updateCart();
   updatePedidosTab();
   updateUIForUserType();
+  initCarousel();
 }
 
 boot();
