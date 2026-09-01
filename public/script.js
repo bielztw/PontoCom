@@ -111,6 +111,15 @@ async function dbGlobalGetAll(table) {
   } catch (e) { console.error('Erro de rede no banco global:', e); return []; }
 }
 
+async function dbGlobalDelete(table, filterCol, filterVal) {
+  try {
+    const url = DB_CONFIG.url + '/rest/v1/' + table + '?' + filterCol + '=eq.' + encodeURIComponent(filterVal);
+    const res = await fetch(url, { method: 'DELETE', headers: dbHeaders() });
+    if (!res.ok) { console.error('Erro ao excluir no banco global (' + table + '):', await res.text()); return false; }
+    return true;
+  } catch (e) { console.error('Erro de rede no banco global:', e); return false; }
+}
+
 // Busca periodicamente as lojas cadastradas por qualquer pessoa, em qualquer lugar do
 // mundo, e mantém o catálogo do site sincronizado automaticamente (a cada 30 segundos).
 function startGlobalSync() {
@@ -237,6 +246,13 @@ async function dbGetStoreByOwner(email) {
 async function dbGetAllStores() {
   if (dbGlobalOK) return dbGlobalGetAll('stores');
   return dbGetAll('stores');
+}
+async function dbDeleteStore(email) {
+  await dbDelete('stores', email); // remove do cache local
+  if (dbGlobalOK) {
+    const ok = await dbGlobalDelete('stores', 'owner_email', email);
+    if (!ok) showToast('Loja removida deste navegador, mas houve um erro ao excluir globalmente. Verifique sua conexão.', 'error');
+  }
 }
 
 // ── Flash DB pill ──
@@ -1295,7 +1311,44 @@ async function openStoreSetupModal() {
     addProductRow(); // começa com uma linha de produto em branco
   }
 
+  // Só mostra a opção de excluir se o vendedor já tiver uma loja cadastrada
+  const delBtn = document.getElementById('ssDeleteBtn');
+  if (delBtn) delBtn.style.display = existing ? 'flex' : 'none';
+
   openModal('modal-store-setup');
+}
+
+async function deleteMyStore() {
+  if (!ensureUserIsSeller()) return;
+  const confirmed = confirm('Tem certeza que deseja excluir sua loja e todos os produtos cadastrados? Essa ação não pode ser desfeita.');
+  if (!confirmed) return;
+
+  await dbDeleteStore(currentUser.email);
+
+  // Remove a loja e seus produtos do catálogo em memória
+  const idx = stores.findIndex(s => s.ownerEmail === currentUser.email);
+  if (idx >= 0) stores.splice(idx, 1);
+  for (let i = products.length - 1; i >= 0; i--) {
+    if (products[i].ownerEmail === currentUser.email) products.splice(i, 1);
+  }
+
+  // Remove o pin da loja no mapa, se estiver visível
+  if (mapInstance && vendorMarkers[currentUser.email]) {
+    mapInstance.removeLayer(vendorMarkers[currentUser.email]);
+    delete vendorMarkers[currentUser.email];
+  }
+
+  // Limpa os dados da loja no perfil do usuário
+  currentUser.storeName = '';
+  await dbSaveUser(currentUser);
+
+  renderStores(stores.slice(0, 6), 'storesHome');
+  renderStores(stores, 'storesAll');
+  renderProducts(products.slice(0, 8), 'productsHome');
+  renderProducts(products, 'productsAll');
+
+  closeModal('modal-store-setup');
+  showToast('🗑️ Loja excluída com sucesso.', 'success');
 }
 
 function addProductRow(data) {

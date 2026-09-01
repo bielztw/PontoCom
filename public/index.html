@@ -16,9 +16,7 @@
 <div class="db-pill" id="dbPill"><div class="db-dot"></div><span id="dbPillMsg">IndexedDB conectado</span></div>
 
 <!-- TOPBAR -->
-<div class="topbar">
-  🎉 FRETE GRÁTIS acima de R$99 · Cupom <strong>BEMVINDO20</strong> = 20% OFF · <span onclick="openModal('modal-register')">Cadastre-se grátis!</span>
-</div>
+
 
 <!-- HEADER -->
 <header>
@@ -588,6 +586,10 @@
     </div>
 
     <button class="form-submit" style="margin-top:16px;" onclick="saveStoreSetup()"><i class="fas fa-check"></i> Salvar loja e produtos</button>
+    <button type="button" id="ssDeleteBtn" onclick="deleteMyStore()" style="display:none;width:100%;justify-content:center;align-items:center;gap:6px;margin-top:10px;padding:12px;border:2px solid #ffdada;background:#fff5f5;color:#e53e3e;border-radius:12px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:all .2s;"
+      onmouseover="this.style.background='#ffe5e5'" onmouseout="this.style.background='#fff5f5'">
+      <i class="fas fa-trash"></i> Excluir loja
+    </button>
     <div class="form-link"><a onclick="closeModal('modal-store-setup');showToast('Você pode cadastrar sua loja a qualquer momento pelo menu do seu perfil.','info')">Fazer isso depois</a></div>
   </div>
 </div>
