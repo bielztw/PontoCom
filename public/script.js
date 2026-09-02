@@ -695,31 +695,125 @@ function switchStoreTab(btn, tab, storeId) {
 }
 
 /* ═══════════════════════════════════════════
-   PRODUCT MODAL
+   PRODUCT MODAL (estilo grandes marketplaces:
+   Mercado Livre / Amazon / Shopee / Shein)
 ═══════════════════════════════════════════ */
-function openProductModal(pid) {
-  const p = products.find(x=>x.id===pid); if (!p) return;
-  document.getElementById('productModalContent').innerHTML = `
-    <div class="product-modal-img">${p.emoji}</div>
-    <h2 style="font-size:20px;font-weight:900;margin-bottom:4px;">${p.name}</h2>
-    <div style="font-size:11px;color:var(--gray);margin-bottom:8px;"><i class="fas fa-store" style="color:var(--rosa)"></i> ${p.store} &nbsp;•&nbsp; ${p.cat.charAt(0).toUpperCase()+p.cat.slice(1)}</div>
-    <div class="stars" style="font-size:14px;margin-bottom:10px;">★★★★★ <span style="color:var(--gray);font-size:12px;font-weight:700;">(127 avaliações)</span></div>
-    <div style="display:flex;align-items:baseline;gap:8px;">
-      <div class="product-modal-price">${fmtPrice(p.price)}</div>
-      ${p.old?`<div class="product-modal-old">${fmtPrice(p.old)}</div>`:''}
-      ${p.discount?`<span style="background:var(--rosa);color:white;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:800;">${p.discount}</span>`:''}
-    </div>
-    <div class="product-modal-desc">${p.desc}</div>
-    <div class="product-modal-store">
-      <span style="font-size:20px;">${stores.find(s=>s.name===p.store)?.emoji||'🏪'}</span>
-      <div><span style="font-size:11px;color:var(--gray);display:block;">Vendido por</span><span style="font-size:13px;font-weight:700;">${p.store}</span></div>
-    </div>
-    <button class="form-submit" onclick="addToCart(${p.id},null);closeModal('modal-product')"><i class="fas fa-cart-plus"></i> Adicionar ao Carrinho</button>`;
-  openModal('modal-product');
-}
-
 // Escapa aspas simples para uso seguro dentro de atributos onclick
 function escapeJs(str) { return String(str).replace(/'/g, "\\'"); }
+let pmQty = 1;
+let pmAddFn = null; // função que efetivamente adiciona ao carrinho (definida na abertura do modal)
+
+// Gera números pseudo-aleatórios, porém estáveis (mesmo produto = sempre os mesmos números)
+function pmSeeded(seed) { const x = Math.sin(seed) * 10000; return x - Math.floor(x); }
+function pmStars(rating) { const full = Math.floor(rating); return '★'.repeat(full) + '☆'.repeat(5-full); }
+
+function pmSetQty(q, max) {
+  pmQty = Math.max(1, Math.min(max || 99, q));
+  const el = document.getElementById('pmQtyValue');
+  if (el) el.textContent = pmQty;
+}
+function pmChangeQty(delta, max) { pmSetQty(pmQty + delta, max); }
+
+function pmConfirmAddToCart() {
+  if (pmAddFn) pmAddFn(pmQty);
+  closeModal('modal-product');
+}
+function pmConfirmBuyNow() {
+  if (pmAddFn) pmAddFn(pmQty);
+  closeModal('modal-product');
+  toggleCart();
+}
+
+// Monta o HTML completo do modal a partir de dados já normalizados
+function buildProductModalHTML(d) {
+  const seed       = d.seed;
+  const rating     = (4.3 + pmSeeded(seed) * 0.7).toFixed(1);
+  const reviews    = Math.floor(30 + pmSeeded(seed * 2.7) * 900);
+  const sold       = Math.floor(reviews * (3 + pmSeeded(seed * 5.3) * 6));
+  const stock      = Math.floor(10 + pmSeeded(seed * 8.1) * 90);
+  const freeShip   = d.price >= 19;
+  const installments = Math.min(10, Math.max(1, Math.round(d.price / 25)));
+  const installVal = (d.price / installments).toFixed(2).replace('.', ',');
+  const bullets    = d.desc.split(/(?<=[.!])\s+/).filter(s => s.trim().length > 3);
+  const soldLabel  = sold >= 1000 ? Math.floor(sold/1000) + ' mil vendidos' : sold + ' vendidos';
+
+  return `
+  <div class="pm-grid">
+    <div class="pm-gallery">
+      <div class="pm-main-image">${d.emoji}</div>
+      <div class="pm-thumbs">
+        <div class="pm-thumb active">${d.emoji}</div>
+        <div class="pm-thumb">${d.storeEmoji}</div>
+        ${d.discount ? `<div class="pm-thumb">🏷️</div>` : ''}
+        <div class="pm-thumb">🚚</div>
+      </div>
+    </div>
+    <div class="pm-info">
+      <div class="pm-breadcrumb">${d.storeName} · ${d.cat.charAt(0).toUpperCase()+d.cat.slice(1)}</div>
+      ${d.discount ? `<span class="pm-tag-best">MAIS VENDIDO</span>` : ''}
+      <h2 class="pm-title">${d.name}</h2>
+      <div class="pm-rating"><span class="stars">${pmStars(rating)}</span> <b>${rating}</b> <span class="pm-rating-count">(${reviews})</span> <span class="pm-sold">· ${soldLabel}</span></div>
+
+      <div class="pm-price-block">
+        ${d.oldPrice ? `<div class="pm-old-price">${fmtPrice(d.oldPrice)}</div>` : ''}
+        <div class="pm-price-row">
+          <span class="pm-price">${fmtPrice(d.price)}</span>
+          ${d.discount ? `<span class="pm-discount-badge">${d.discount}</span>` : ''}
+        </div>
+        <div class="pm-installments">em ${installments}x de R$ ${installVal} sem juros</div>
+      </div>
+
+      ${freeShip ? `<div class="pm-shipping"><i class="fas fa-truck"></i> <b>Frete grátis</b> para todo o Brasil</div>` : ''}
+
+      <div class="pm-qty-row">
+        <span class="pm-qty-label">Quantidade:</span>
+        <div class="pm-qty-stepper">
+          <button class="qty-btn" onclick="pmChangeQty(-1, ${stock})">−</button>
+          <span id="pmQtyValue">1</span>
+          <button class="qty-btn" onclick="pmChangeQty(1, ${stock})">+</button>
+        </div>
+        <span class="pm-stock">(${stock} disponíveis)</span>
+      </div>
+
+      <button class="pm-buy-btn" onclick="pmConfirmBuyNow()"><i class="fas fa-bolt"></i> Comprar agora</button>
+      <button class="pm-cart-btn" onclick="pmConfirmAddToCart()"><i class="fas fa-cart-plus"></i> Adicionar ao carrinho</button>
+
+      <div class="product-modal-store" onclick="pmGoToStore('${escapeJs(d.storeName)}')" style="cursor:pointer;">
+        <span style="font-size:20px;">${d.storeEmoji}</span>
+        <div><span style="font-size:11px;color:var(--gray);display:block;">Vendido e entregue por</span><span style="font-size:13px;font-weight:700;">${d.storeName} <i class="fas fa-chevron-right" style="font-size:9px;color:var(--gray);"></i></span></div>
+      </div>
+
+      <div class="pm-guarantees">
+        <div><i class="fas fa-undo"></i> Devolução grátis em até 30 dias</div>
+        <div><i class="fas fa-shield-alt"></i> Compra garantida — receba o produto ou seu dinheiro de volta</div>
+      </div>
+
+      ${bullets.length ? `
+      <div class="pm-highlights">
+        <h4>O que você precisa saber sobre este produto</h4>
+        <ul>${bullets.map(b => `<li>${b}</li>`).join('')}</ul>
+      </div>` : ''}
+    </div>
+  </div>`;
+}
+
+function pmGoToStore(storeName) {
+  const s = stores.find(x => x.name === storeName);
+  closeModal('modal-product');
+  if (s) openStoreModal(s.id);
+}
+
+function openProductModal(pid) {
+  const p = products.find(x=>x.id===pid); if (!p) return;
+  const s = stores.find(x=>x.name===p.store);
+  document.getElementById('productModalContent').innerHTML = buildProductModalHTML({
+    name: p.name, emoji: p.emoji, price: p.price, oldPrice: p.old || null, discount: p.discount || null,
+    cat: p.cat, storeName: p.store, storeEmoji: s?.emoji || '🏪', desc: p.desc, seed: p.id
+  });
+  pmQty = 1;
+  pmAddFn = (qty) => addToCart(p.id, null, qty);
+  openModal('modal-product');
+}
 
 // Abre o modal de detalhes de um produto listado dentro da página da loja
 // (em vez de adicionar direto ao carrinho ao clicar)
@@ -728,44 +822,37 @@ function openMiniProductModal(storeId, idx) {
   const p = s.products[idx]; if (!p) return;
   const priceNum = parseFloat(String(p.p).replace('R$','').replace(',','.').trim());
   const oldNum   = p.old ? parseFloat(String(p.old).replace('R$','').replace(',','.').trim()) : null;
+  const discount = oldNum ? '-' + Math.round((1 - priceNum/oldNum) * 100) + '%' : null;
 
-  document.getElementById('productModalContent').innerHTML = `
-    <div class="product-modal-img">${p.e}</div>
-    <h2 style="font-size:20px;font-weight:900;margin-bottom:4px;">${p.n}</h2>
-    <div style="font-size:11px;color:var(--gray);margin-bottom:8px;"><i class="fas fa-store" style="color:var(--rosa)"></i> ${s.name} &nbsp;•&nbsp; ${s.cat.charAt(0).toUpperCase()+s.cat.slice(1)}</div>
-    <div class="stars" style="font-size:14px;margin-bottom:10px;">${'★'.repeat(Math.floor(s.rating))}${'☆'.repeat(5-Math.floor(s.rating))} <span style="color:var(--gray);font-size:12px;font-weight:700;">${s.rating} (${s.reviews} avaliações da loja)</span></div>
-    <div style="display:flex;align-items:baseline;gap:8px;">
-      <div class="product-modal-price">${fmtPrice(priceNum)}</div>
-      ${oldNum?`<div class="product-modal-old">${fmtPrice(oldNum)}</div>`:''}
-    </div>
-    <div class="product-modal-desc">Produto vendido por ${s.name}. ${s.desc}</div>
-    <div class="product-modal-store">
-      <span style="font-size:20px;">${s.emoji}</span>
-      <div><span style="font-size:11px;color:var(--gray);display:block;">Vendido por</span><span style="font-size:13px;font-weight:700;">${s.name}</span></div>
-    </div>
-    <button class="form-submit" onclick="addToCartByName('${escapeJs(p.n)}','${p.p}','${p.e}','${escapeJs(s.name)}');closeModal('modal-product')"><i class="fas fa-cart-plus"></i> Adicionar ao Carrinho</button>`;
+  document.getElementById('productModalContent').innerHTML = buildProductModalHTML({
+    name: p.n, emoji: p.e, price: priceNum, oldPrice: oldNum, discount,
+    cat: s.cat, storeName: s.name, storeEmoji: s.emoji, desc: `Produto vendido por ${s.name}. ${s.desc}`, seed: storeId*100 + idx
+  });
+  pmQty = 1;
+  pmAddFn = (qty) => addToCartByName(p.n, p.p, p.e, s.name, qty);
   openModal('modal-product');
 }
 
 /* ═══════════════════════════════════════════
    CART
 ═══════════════════════════════════════════ */
-function addToCart(pid, btn) {
+function addToCart(pid, btn, qty) {
+  qty = qty || 1;
   const p = products.find(x=>x.id===pid); if (!p) return;
   const ex = cartItems.find(i=>i.pid===pid);
-  if (ex) ex.qty++; else cartItems.push({pid, name:p.name, price:p.price, emoji:p.emoji, store:p.store, qty:1});
+  if (ex) ex.qty+=qty; else cartItems.push({pid, name:p.name, price:p.price, emoji:p.emoji, store:p.store, qty});
   updateCart();
   showToast('🛒 '+p.name+' adicionado!','success');
   if (btn) { btn.classList.add('added'); setTimeout(()=>btn.classList.remove('added'),400); }
 }
 
-function addToCartByName(name, priceStr, emoji, store) {
+function addToCartByName(name, priceStr, emoji, store, qty) {
+  qty = qty || 1;
   const price = parseFloat(priceStr.replace('R$','').replace(',','.'));
   const ex = cartItems.find(i=>i.name===name);
-  if (ex) ex.qty++; else cartItems.push({pid:Math.random(), name, price, emoji, store, qty:1});
+  if (ex) ex.qty+=qty; else cartItems.push({pid:Math.random(), name, price, emoji, store, qty});
   updateCart();
   showToast('🛒 '+name+' adicionado!','success');
-  closeModal('modal-store');
 }
 
 function updateCart() {
