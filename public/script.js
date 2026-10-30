@@ -1,52 +1,3 @@
-/* ═══════════════════════════════════════════
-   BANCO DE DADOS GLOBAL (Supabase — via fetch puro,
-   sem SDK externo, para não interferir no resto do JS)
-   ═══════════════════════════════════════════
-   Isso é o que faz o cadastro de lojas/produtos valer
-   para QUALQUER pessoa no mundo, e não só para o
-   navegador de quem cadastrou.
-
-   COMO ATIVAR (grátis, leva ~3 minutos):
-   1. Acesse https://supabase.com e crie uma conta/projeto
-      gratuito (fica pronto em ~2 min).
-   2. No menu lateral do projeto, vá em "SQL Editor" →
-      "New query", cole o SQL abaixo e clique em "Run":
-
-      create table if not exists users (
-        email text primary key,
-        data jsonb not null,
-        updated_at timestamptz default now()
-      );
-      create table if not exists stores (
-        owner_email text primary key,
-        data jsonb not null,
-        updated_at timestamptz default now()
-      );
-      alter table users enable row level security;
-      alter table stores enable row level security;
-      create policy "public read users"   on users  for select using (true);
-      create policy "public write users"  on users  for insert with check (true);
-      create policy "public update users" on users  for update using (true);
-      create policy "public read stores"   on stores for select using (true);
-      create policy "public write stores"  on stores for insert with check (true);
-      create policy "public update stores" on stores for update using (true);
-
-   3. Vá em "Project Settings" (ícone de engrenagem) → "API".
-   4. Copie o "Project URL" e a chave "anon public".
-   5. Cole os dois valores no objeto DB_CONFIG logo abaixo,
-      substituindo os textos "COLE_AQUI_...".
-   6. Salve e recarregue a página — pronto, o cadastro de
-      lojas passa a ser global (todo mundo vê as lojas de
-      todo mundo, atualizado automaticamente a cada 30s).
-
-   Enquanto isso não for configurado, o site continua
-   funcionando normalmente, só que cada cadastro fica salvo
-   apenas no navegador de quem cadastrou (modo local).
-
-   Se algo der errado aqui (chave errada, sem internet etc.),
-   o resto do site continua funcionando normalmente — todo
-   este bloco é protegido com try/catch.
-═══════════════════════════════════════════ */
 const DB_CONFIG = {
   url: "https://asplxpufeencamiluvkb.supabase.co",     // ex: https://xxxxxxxx.supabase.co
   key: "sb_publishable_HGW2_m67u4dMzy4DEVyoRA_X0OjNIHP"     // Project Settings → API → anon public
@@ -507,7 +458,7 @@ function openUserMenu() {
     </div>
     ${u.type==='vendedor'?`<div style="background:var(--gray-light);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><p style="font-size:10px;color:var(--gray);">Loja</p><p style="font-weight:800;font-size:14px;">${u.storeName||u.name+' Store'}</p><p style="font-size:10px;color:var(--gray);">CNPJ/MEI: ${u.doc||'—'}</p></div><div class="user-plan-box"><span>Plano atual</span><strong>${getCurrentPlan()?.name||'Começar Local'}</strong><small>${getCurrentPlan()?.priceLabel||'R$ 0/mês'} · ${String(getCurrentPlan()?.commission||10).replace('.',',')}% por venda</small></div>`:''}
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:11px;font-weight:700;color:#15803d;display:flex;align-items:center;gap:6px;"><i class="fas fa-database"></i> Dados salvos no IndexedDB</div>
-    ${u.type==='vendedor'?`<button class="form-submit" style="margin-bottom:10px;background:var(--grad1);" onclick="closeModal('modal-user');openStoreSetupModal()"><i class="fas fa-store"></i> Cadastrar/Gerenciar Loja e Produtos</button><button class="form-submit seller-plan-manage-btn" style="margin-bottom:10px;" onclick="closeModal('modal-user');showTab('planos')"><i class="fas fa-gem"></i> Gerenciar meu plano</button>`:''}
+    ${u.type==='vendedor'?`<button class="form-submit" style="margin-bottom:10px;background:var(--grad1);" onclick="closeModal('modal-user');openStoreSetupModal()"><i class="fas fa-store"></i> Cadastrar/Gerenciar Loja e Produtos</button>`:''}
     <button class="form-submit" style="margin-bottom:10px;" onclick="closeModal('modal-user');showTab('pedidos')"><i class="fas fa-box"></i> Meus Pedidos</button>
     <button style="width:100%;background:#fef2f2;color:#dc2626;border:none;padding:12px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;" onclick="closeModal('modal-user');doLogout()"><i class="fas fa-sign-out-alt"></i> Sair da Conta</button>
   `;
@@ -881,35 +832,31 @@ function updateCart() {
   recalcCart();
 }
 
-function recalcCart() {
+function getCartTotals() {
   const subtotal = cartItems.reduce((a,i)=>a+(i.price*i.qty), 0);
-  document.getElementById('cartSubtotal').textContent = fmtPrice(subtotal);
-
   let discount = 0;
   let discountLabel = 'Desconto:';
-  const discRow = document.getElementById('cartDiscountRow');
-
   if (appliedCoupon) {
     const c = appliedCoupon;
-    if (c.type === 'percent') {
-      discount = subtotal * (c.value / 100);
-      discountLabel = `Desconto (${c.value}%):`;
-    } else if (c.type === 'fixed') {
-      discount = Math.min(c.value, subtotal);
-      discountLabel = `Desconto fixo:`;
-    }
-    if (discount > 0) {
-      discRow.style.display = 'flex';
-      document.getElementById('cartDiscountLabel').textContent = discountLabel;
-      document.getElementById('cartDiscountAmt').textContent = '-'+fmtPrice(discount);
-    } else {
-      discRow.style.display = 'none';
-    }
+    if (c.type === 'percent') { discount = subtotal * (c.value / 100); discountLabel = `Desconto (${c.value}%):`; }
+    else if (c.type === 'fixed') { discount = Math.min(c.value, subtotal); discountLabel = 'Desconto fixo:'; }
+  }
+  const total = Math.max(0, subtotal - discount);
+  return { subtotal, discount, discountLabel, total };
+}
+
+function recalcCart() {
+  const { subtotal, discount, discountLabel, total } = getCartTotals();
+  document.getElementById('cartSubtotal').textContent = fmtPrice(subtotal);
+
+  const discRow = document.getElementById('cartDiscountRow');
+  if (discount > 0) {
+    discRow.style.display = 'flex';
+    document.getElementById('cartDiscountLabel').textContent = discountLabel;
+    document.getElementById('cartDiscountAmt').textContent = '-'+fmtPrice(discount);
   } else {
     discRow.style.display = 'none';
   }
-
-  const total = Math.max(0, subtotal - discount);
   document.getElementById('cartTotal').textContent = fmtPrice(total);
 }
 
@@ -950,12 +897,159 @@ function removeCoupon() {
 function checkout() {
   if (cartItems.length===0) { showToast('Seu carrinho está vazio!','error'); return; }
   if (!currentUser) { toggleCart(); openModal('modal-login'); return; }
+  toggleCart();
+  openPaymentModal();
+}
+
+/* ═══════════════════════════════════════════
+   TELA DE PAGAMENTO
+═══════════════════════════════════════════ */
+let payMethod = 'cartao';
+
+function openPaymentModal() {
+  payMethod = 'cartao';
+  renderPaymentSummary();
+  selectPayMethod('cartao');
+  openModal('modal-payment');
+}
+
+function renderPaymentSummary() {
+  const { subtotal, discount, discountLabel, total } = getCartTotals();
+
+  document.getElementById('paySummaryItems').innerHTML = cartItems.map(i => `
+    <div class="pay-summary-item"><span>${i.qty}x ${i.name}</span><span>${fmtPrice(i.price*i.qty)}</span></div>`).join('');
+
+  document.getElementById('paySubtotal').textContent = fmtPrice(subtotal);
+  const discRow = document.getElementById('payDiscountRow');
+  if (discount > 0) {
+    discRow.style.display = 'flex';
+    document.getElementById('payDiscountLabel').textContent = discountLabel;
+    document.getElementById('payDiscount').textContent = '-'+fmtPrice(discount);
+  } else {
+    discRow.style.display = 'none';
+  }
+  document.getElementById('payTotal').textContent = fmtPrice(total);
+
+  renderCardInstallmentOptions(total);
+  renderPixBlock(total);
+  renderBoletoBlock(total);
+}
+
+function selectPayMethod(method) {
+  payMethod = method;
+  document.querySelectorAll('.pay-method-tab').forEach(t => t.classList.toggle('active', t.dataset.method === method));
+  document.querySelectorAll('.pay-method-panel').forEach(p => p.classList.toggle('active', p.id === 'payPanel-'+method));
+  const btn = document.getElementById('payConfirmBtn');
+  btn.innerHTML = method === 'cartao'
+    ? '<i class="fas fa-lock"></i> Confirmar Pagamento'
+    : method === 'pix'
+    ? '<i class="fas fa-check"></i> Já paguei / Simular pagamento'
+    : '<i class="fas fa-check"></i> Confirmar geração do boleto';
+}
+
+function renderCardInstallmentOptions(total) {
+  const sel = document.getElementById('payInstallments'); if (!sel) return;
+  const max = Math.min(10, Math.max(1, Math.floor(total / 10)) || 1);
+  let opts = '';
+  for (let n = 1; n <= max; n++) {
+    const val = (total / n).toFixed(2).replace('.', ',');
+    opts += `<option value="${n}">${n}x de R$ ${val}${n===1?' à vista':' sem juros'}</option>`;
+  }
+  sel.innerHTML = opts;
+}
+
+// Gera um "QR code" visual fake (grade de blocos), suficiente para fins de protótipo/demonstração
+function generateFakeQrSvg(seedText) {
+  let seed = 0;
+  for (let i = 0; i < seedText.length; i++) seed += seedText.charCodeAt(i) * (i + 1);
+  const size = 11;
+  let cells = '';
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const isFinder = (x < 3 && y < 3) || (x > size-4 && y < 3) || (x < 3 && y > size-4);
+      const on = isFinder ? (x===1||y===1||x===0||y===0||x===size-1||y===size-1||x===size-2||y===size-2) ? true : (x>0&&x<size-1&&y>0&&y<size-1&&!(x===1&&y===1))
+                 : pmSeeded(seed + x*13 + y*7) > 0.52;
+      if (on) cells += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+    }
+  }
+  return `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">${cells}</svg>`;
+}
+
+function renderPixBlock(total) {
+  const el = document.getElementById('pixQrCode'); if (!el) return;
+  const pixCode = '00020126580014BR.GOV.BCB.PIX0136pontocom-'+Math.random().toString(36).slice(2,10)+'5204000053039865406'+total.toFixed(2)+'5802BR6009SAO PAULO62070503***6304ABCD';
+  el.innerHTML = generateFakeQrSvg(pixCode);
+  document.getElementById('pixCode').value = pixCode;
+}
+
+function copyPixCode() {
+  const field = document.getElementById('pixCode');
+  field.select();
+  navigator.clipboard?.writeText(field.value).catch(()=>{});
+  showToast('✅ Código Pix copiado! Cole no app do seu banco.', 'success');
+}
+
+function renderBoletoBlock(total) {
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + 3);
+  const dueStr = dueDate.toLocaleDateString('pt-BR');
+  document.getElementById('boletoDueDate').textContent = dueStr;
+  document.getElementById('boletoValue').textContent = fmtPrice(total);
+  const code = '34191.79001 01043.510047 91020.150008 8 '+Math.floor(Date.now()/1000);
+  document.getElementById('boletoCode').value = code;
+}
+
+function copyBoletoCode() {
+  const field = document.getElementById('boletoCode');
+  field.select();
+  navigator.clipboard?.writeText(field.value).catch(()=>{});
+  showToast('✅ Código de barras copiado!', 'success');
+}
+
+function confirmPayment() {
+  if (cartItems.length === 0) { closeModal('modal-payment'); return; }
+
+  if (payMethod === 'cartao') {
+    const num = document.getElementById('cardNumber').value.trim();
+    const name = document.getElementById('cardName').value.trim();
+    const exp = document.getElementById('cardExpiry').value.trim();
+    const cvv = document.getElementById('cardCvv').value.trim();
+    if (!num || num.replace(/\s/g,'').length < 12) { showToast('Número do cartão inválido.', 'error'); return; }
+    if (!name) { showToast('Informe o nome impresso no cartão.', 'error'); return; }
+    if (!exp || !exp.includes('/')) { showToast('Validade inválida (MM/AA).', 'error'); return; }
+    if (!cvv || cvv.length < 3) { showToast('CVV inválido.', 'error'); return; }
+  }
+
+  const paidLabel = payMethod === 'cartao' ? 'Cartão de Crédito' : payMethod === 'pix' ? 'Pix' : 'Boleto';
+  const { total } = getCartTotals();
+  const orderId = '#' + Math.floor(100000 + Math.random()*900000);
+  const today = new Date().toLocaleDateString('pt-BR');
+
+  // Registra o pedido para cada loja envolvida na compra (visível no painel de Pedidos do vendedor)
+  const byStore = {};
+  cartItems.forEach(i => { (byStore[i.store||'Loja'] = byStore[i.store||'Loja'] || []).push(i); });
+  Object.entries(byStore).forEach(([storeName, items]) => {
+    const storeTotal = items.reduce((a,i)=>a+i.price*i.qty, 0);
+    orders.unshift({
+      id: orderId, client: currentUser.name, product: items.map(i=>i.name).join(', '),
+      val: fmtPrice(storeTotal), status: payMethod==='boleto' ? 'pendente' : 'pago',
+      date: today, qty: items.reduce((a,i)=>a+i.qty,0), pay: paidLabel,
+      addr: currentUser.address || 'Endereço não informado', store: storeName
+    });
+  });
+  renderOrders();
+
   cartItems = [];
   appliedCoupon = null;
   document.getElementById('couponBanner').classList.remove('show');
   updateCart();
-  toggleCart();
-  showToast('🎉 Pedido realizado! Obrigado, '+currentUser.name.split(' ')[0]+'!','success');
+  closeModal('modal-payment');
+
+  if (payMethod === 'boleto') {
+    showToast('📄 Boleto gerado! Pague até o vencimento para confirmar seu pedido.', 'success');
+  } else {
+    showToast('🎉 Pagamento aprovado! Pedido '+orderId+' confirmado, '+currentUser.name.split(' ')[0]+'!', 'success');
+  }
 }
 
 /* ── Render coupons modal ── */
@@ -1143,8 +1237,7 @@ function showTab(tab) {
     } else if (currentUser.type !== 'vendedor') {
       showToast('🔒 O Painel Logístico é exclusivo para lojistas.','error');
     } else {
-      showToast('🔒 O Painel Logístico completo está disponível a partir do Pro Local.','info');
-      showTab('planos');
+      showToast('🔒 O Painel Logístico completo está disponível a partir do Pro Local. Fale com o suporte para fazer upgrade.','info');
     }
     return;
   }
@@ -1157,7 +1250,6 @@ function showTab(tab) {
   if (mt) mt.classList.add('active');
   if (tab==='mapa')      initMap();
   if (tab==='logistica') { renderChart(); renderOrders(); }
-  if (tab==='planos') renderPlanUI();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1443,8 +1535,7 @@ function addProductRow(data) {
   const plan = getCurrentPlan();
   const currentRows = document.querySelectorAll('#ssProductsList .ss-product-row').length;
   if (!data.name && plan && plan.productLimit !== Infinity && currentRows >= plan.productLimit) {
-    showToast(`Seu plano ${plan.name} permite até ${plan.productLimit} produtos. Faça upgrade para adicionar mais.`, 'info');
-    showTab('planos');
+    showToast(`Seu plano ${plan.name} permite até ${plan.productLimit} produtos. Fale com o suporte para fazer upgrade.`, 'info');
     closeModal('modal-store-setup');
     return;
   }
@@ -1471,7 +1562,7 @@ function renderStorePlanNotice() {
   const plan = getCurrentPlan();
   const existingCount = products.filter(p => p.ownerEmail === currentUser.email).length;
   const limit = formatPlanLimit(plan.productLimit);
-  el.innerHTML = `<div><i class="fas fa-gem"></i><span><strong>${plan.name}</strong> · ${existingCount}/${limit} produtos usados · ${String(plan.commission).replace('.',',')}% de comissão</span></div><button type="button" onclick="closeModal('modal-store-setup');showTab('planos')">Ver planos</button>`;
+  el.innerHTML = `<div><i class="fas fa-gem"></i><span><strong>${plan.name}</strong> · ${existingCount}/${limit} produtos usados · ${String(plan.commission).replace('.',',')}% de comissão</span></div>`;
 }
 
 function removeProductRow(rowId) {
