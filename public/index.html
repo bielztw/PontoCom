@@ -531,7 +531,7 @@
     <button class="modal-close" onclick="closeModal('modal-store-setup')"><i class="fas fa-times"></i></button>
     <h2><i class="fas fa-store" style="color:var(--rosa)"></i> Cadastre sua loja e produtos</h2>
     <p>Complete os dados da sua loja e adicione os produtos que deseja vender</p>
-    <div id="storePlanNotice" class="store-plan-notice"></div>
+    
 
     <div class="form-group"><label>Nome da loja</label><input type="text" id="ssStoreName" placeholder="Ex: Tech do João"></div>
     <div class="form-group"><label>Categoria</label>
@@ -573,24 +573,6 @@
   </div>
 </div>
 
-<!-- PLAN UPGRADE / CHECKOUT MODAL -->
-<div class="modal-overlay" id="modal-plan-upgrade">
-  <div class="modal plan-upgrade-modal" style="max-width:540px;">
-    <button class="modal-close" onclick="closeModal('modal-plan-upgrade')"><i class="fas fa-times"></i></button>
-    <div class="upgrade-kicker"><i class="fas fa-gem"></i> Plano para vendedores</div>
-    <h2 id="upgradePlanTitle">Escolher plano</h2>
-    <p id="upgradePlanSubtitle">Revise os benefícios antes de continuar.</p>
-    <div class="upgrade-summary">
-      <div><span>Mensalidade</span><strong id="upgradePlanPrice">—</strong></div>
-      <div><span>Comissão por venda</span><strong id="upgradePlanCommission">—</strong></div>
-      <div><span>Limite de produtos</span><strong id="upgradePlanProducts">—</strong></div>
-    </div>
-    <ul class="upgrade-benefits" id="upgradePlanBenefits"></ul>
-    <div class="upgrade-demo-warning"><i class="fas fa-flask"></i><span><strong>Modo protótipo:</strong> nenhuma cobrança real será feita. A escolha será salva no perfil para testar limites e desbloqueios.</span></div>
-    <button class="form-submit" id="confirmPlanBtn" onclick="confirmPlanChange()"><i class="fas fa-check"></i> Confirmar plano</button>
-    <div class="form-link"><a onclick="closeModal('modal-plan-upgrade')">Agora não</a></div>
-  </div>
-</div>
 
 <!-- USER MENU MODAL -->
 <div class="modal-overlay" id="modal-user">

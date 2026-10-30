@@ -456,7 +456,7 @@ function openUserMenu() {
       <p style="font-size:12px;color:var(--gray);margin-bottom:6px;">${u.email}</p>
       <span style="background:var(--rosa-pale);color:var(--rosa);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:800;">${u.type==='vendedor'?'🏪 Vendedor':'🛒 Comprador'}</span>
     </div>
-    ${u.type==='vendedor'?`<div style="background:var(--gray-light);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><p style="font-size:10px;color:var(--gray);">Loja</p><p style="font-weight:800;font-size:14px;">${u.storeName||u.name+' Store'}</p><p style="font-size:10px;color:var(--gray);">CNPJ/MEI: ${u.doc||'—'}</p></div><div class="user-plan-box"><span>Plano atual</span><strong>${getCurrentPlan()?.name||'Começar Local'}</strong><small>${getCurrentPlan()?.priceLabel||'R$ 0/mês'} · ${String(getCurrentPlan()?.commission||10).replace('.',',')}% por venda</small></div>`:''}
+    ${u.type==='vendedor'?`<div style="background:var(--gray-light);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><p style="font-size:10px;color:var(--gray);">Loja</p><p style="font-weight:800;font-size:14px;">${u.storeName||u.name+' Store'}</p><p style="font-size:10px;color:var(--gray);">CNPJ/MEI: ${u.doc||'—'}</p></div>`:''}
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:11px;font-weight:700;color:#15803d;display:flex;align-items:center;gap:6px;"><i class="fas fa-database"></i> Dados salvos no IndexedDB</div>
     ${u.type==='vendedor'?`<button class="form-submit" style="margin-bottom:10px;background:var(--grad1);" onclick="closeModal('modal-user');openStoreSetupModal()"><i class="fas fa-store"></i> Cadastrar/Gerenciar Loja e Produtos</button>`:''}
     <button class="form-submit" style="margin-bottom:10px;" onclick="closeModal('modal-user');showTab('pedidos')"><i class="fas fa-box"></i> Meus Pedidos</button>
@@ -1061,7 +1061,7 @@ function renderCoupons() {
           <div style="font-size:16px;font-weight:900;color:${c.color};letter-spacing:2px;">${c.code}</div>
           <div style="font-size:12px;font-weight:700;margin-top:3px;">${c.desc}</div>
           ${c.minOrder>0?`<div style="font-size:10px;color:var(--gray);margin-top:2px;">Pedido mínimo: ${fmtPrice(c.minOrder)}</div>`:''}
-          <div style="font-size:10px;color:var(--gray);margin-top:1px;">Válido até ${c.expiry}</div>
+          <div style="font-size:10px;color:var(--gray);margin-top:1px;">Válido até 31/12/2026</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:5px;">
           <button style="background:${c.color};color:white;border:none;padding:7px 14px;border-radius:9px;font-family:'Nunito',sans-serif;font-weight:800;font-size:11px;cursor:pointer;" onclick="copyCoupon('${c.code}')">Copiar</button>
